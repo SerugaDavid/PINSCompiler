@@ -57,7 +57,37 @@ public class Lexer {
      */
     public List<Symbol> scan() {
         var symbols = new ArrayList<Symbol>();
-        // todo: implementacija leksikalne analize
+
+        // declare needed variables
+        String word = "";
+
+        int line = 1;
+        int column = 1;
+
+        // loop through the source code
+        for (int i = 0; i < this.source.length(); i++) {
+            char c = this.source.charAt(i);
+
+            // whitespace
+            if (c == ' ' || c == '\t' || c == '\n' || c == '\r') {
+                if (word != "") {
+                    // take care of the word
+                }
+                if (c == '\n' || c == '\r') {
+                    line++;
+                    column = 1;
+                }
+                continue;
+            }
+
+            word += c;
+
+        }
+
+
+
+
+
         return symbols;
     }
 }

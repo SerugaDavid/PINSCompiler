@@ -60,6 +60,7 @@ public class Lexer {
 
         // declare needed variables
         String word = "";
+        boolean[] type = {false, false, false, false};
 
         int line = 1;
         int column = 1;
@@ -102,5 +103,31 @@ public class Lexer {
 
     private boolean canBeString(String word) {
         return word.charAt(0) == '\'';
+    }
+
+    private boolean isSymbol(String word) {
+        String[] symbols = {"+", "-", "*", "/", "%", "&", "|", "!", "==", "!=", "<", ">", "<=", ">=", "(", ")", "[", "]", "{", "}", ":", ";", ".", ",", "="};
+        for (String symbol : symbols) {
+            if (word.equals(symbol)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean[] getType(String word) {
+        boolean[] type = {false, false, false, false};
+        if (isName(word)) {
+            type[0] = true;
+        }
+        if (isNumber(word)) {
+            type[1] = true;
+        }
+        if (canBeString(word)) {
+            type[2] = true;
+        }
+        if (isSymbol(word)) {
+            type[3] = true;
+        }
     }
 }

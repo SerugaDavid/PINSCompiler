@@ -90,4 +90,17 @@ public class Lexer {
 
         return symbols;
     }
+
+
+    private boolean isName(String word) {
+        return word.matches("[a-zA-Z_][a-zA-Z0-9_]*");
+    }
+
+    private boolean isNumber(String word) {
+        return word.matches("[0-9]|[1-9][0-9]*");
+    }
+
+    private boolean canBeString(String word) {
+        return word.charAt(0) == '\'';
+    }
 }

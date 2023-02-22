@@ -102,29 +102,35 @@ public class Lexer {
             // comments
             if (c == '#' || (word.length() != 0 && word.charAt(0) == '#')) {
                 if (word.length() != 0 && word.charAt(0) != '#') {
+                    // Handle the start of a comment and render the word
                     symbol = renderWord(word, line, column);
                     symbols.add(symbol);
                     column++;
                     word = "";
                 }
                 if (c == '\n' || c == '\r') {
+                    // end a comment at the end of the line
                     line++;
                     column = 1;
                     word = "";
                     continue;
                 }
+                // add the character to the comment
                 word += c;
+                continue;
             }
 
             // whitespace
             if (c == ' ' || c == '\t' || c == '\n' || c == '\r') {
                 if (word != "") {
+                    // render the word when whitespace is encountered
                     symbol = renderWord(word, line, column);
                     symbols.add(symbol);
                     column++;
                     word = "";
                 }
                 if (c == '\n' || c == '\r') {
+                    // update line and column with new line
                     line++;
                     column = 1;
                 }
@@ -133,7 +139,10 @@ public class Lexer {
 
             // illegal character
             if (!type[2] && isIllegal(c)) {
-                Report.error("Illegal character '" + c + "' at line " + line + ", column " + column);
+                Location start = new Location(line, column - word.length() + 1);
+                Location end = new Location(line, column);
+                Position pos = new Position(start, end);
+                Report.error(pos, "Invalid character: '" + c + "'");
                 continue;
             }
 
@@ -141,6 +150,7 @@ public class Lexer {
             word += c;
             type = getType(word);
             if (!anyType(type)) {
+                // render a word when a new type is encountered
                 word = word.substring(0, word.length() - 1);
                 symbol = renderWord(word, line, column);
                 symbols.add(symbol);
@@ -156,15 +166,28 @@ public class Lexer {
             symbol = renderWord(word, line, column-1);
             symbols.add(symbol);
         }
+
+        // add EOF
         symbols.add(new Symbol(new Location(line, column), new Location(line, column), EOF, "EOF"));
 
         return symbols;
     }
 
+    /**
+     * This method gets a word and then creates a symbol from it.
+     *
+     * @param word represents a word that will get rendered.
+     * @param line represents the line of the word.
+     * @param column represents the column on where the word ends.
+     * @return Object Symbol with rendered word.
+     */
     private Symbol renderWord(String word, int line, int column) {
+        // initialize symbol and locations
         Symbol symbol = null;
         Location start = new Location(line, column - word.length() + 1);
         Location end = new Location(line, column);
+
+        // check the type of the word
         boolean[] type = getType(word);
         if (type[0]) {
             // name
@@ -194,32 +217,54 @@ public class Lexer {
         return symbol;
     }
 
+    /**
+     * This method checks if the word is a valid name or IDENTIFIER.
+     *
+     * @param word represents a word that will get checked.
+     * @return boolean true if the word is a valid name, false otherwise.
+     */
     private boolean isName(String word) {
         return word.matches("[a-zA-Z_][a-zA-Z0-9_]*");
     }
 
+    /**
+     * This method checks if the word is a valid number C_INTEGER.
+     *
+     * @param word represents a word that will get checked.
+     * @return boolean true if the word is a valid number, false otherwise.
+     */
     private boolean isNumber(String word) {
         return word.matches("[0-9]|[1-9][0-9]*");
     }
 
+    /**
+     * This method checks if the word could potentially be a string or C_STRING.
+     *
+     * @param word represents a word that will get checked.
+     * @return boolean true if the word could be a string, false otherwise.
+     */
     private boolean canBeString(String word) {
         return isString(word) || (word.charAt(0) == '\'' && countChar(word, '\'')%2 == 1);
     }
 
+    /**
+     * This method checks if the word is a valid string or C_STRING.
+     *
+     * @param word represents a word that will get checked.
+     * @return boolean true if the word is a valid string, false otherwise.
+     */
     private boolean isString(String word) {
         return word.charAt(0) == '\'' && word.charAt(word.length() - 1) == '\'' && countChar(word, '\'')%2 == 0;
     }
 
-    private int countChar(String word, char c) {
-        int count = 0;
-        for (int i = 0; i < word.length(); i++) {
-            if (word.charAt(i) == c) {
-                count++;
-            }
-        }
-        return count;
-    }
-
+    /**
+     * This method checks if the word is a valid string or C_STRING.
+     *
+     * @param word represents a word that is a string.
+     * @param line represents the line of the word.
+     * @param column represents the column on where the word ends.
+     * @return boolean true if the word is a valid string, false otherwise.
+     */
     private boolean isValidString(String word, int line, int column) {
         word = word.substring(1, word.length() - 1);
         if (!word.matches("[ -~]*")) {
@@ -231,11 +276,41 @@ public class Lexer {
         return true;
     }
 
+    /**
+     * This method renders a string by removing the quotes and replacing the escape sequences.
+     *
+     * @param word that is a valid string or C_STRING.
+     * @return rendered string.
+     */
     private String renderString(String word) {
         // TODO: implement
         return "";
     }
 
+    /**
+     * This method counts the number of occurrences of a character in a word.
+     *
+     * @param word represents a string from where to count the characters.
+     * @param c represents the character to count.
+     * @return number of occurrences of the character in the word.
+     */
+    private int countChar(String word, char c) {
+        int count = 0;
+        for (int i = 0; i < word.length(); i++) {
+            if (word.charAt(i) == c) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+
+    /**
+     * This method checks if the word is a valid operator.
+     *
+     * @param word represents a word that will get checked.
+     * @return boolean true if the word is a valid operator, false otherwise.
+     */
     private boolean isOperator(String word) {
         String[] operators = {"+", "-", "*", "/", "%", "&", "|", "!", "==", "!=", "<", ">", "<=", ">=", "(", ")", "[", "]", "{", "}", ":", ";", ".", ",", "="};
         for (String operator : operators) {
@@ -246,6 +321,12 @@ public class Lexer {
         return false;
     }
 
+    /**
+     * This method checks the type of the word.
+     *
+     * @param word represents a word that will get checked.
+     * @return boolean[] array of booleans that represent the type of the word.
+     */
     private boolean[] getType(String word) {
         boolean[] type = {false, false, false, false, false};
         if (isName(word)) {
@@ -266,6 +347,12 @@ public class Lexer {
         return type;
     }
 
+    /**
+     * This method checks if the word is of any type.
+     *
+     * @param type boolean[] array that represent the types of the word.
+     * @return true if the word is of any type, false otherwise.
+     */
     private boolean anyType(boolean[] type) {
         for (boolean b : type) {
             if (b)
@@ -274,6 +361,12 @@ public class Lexer {
         return false;
     }
 
+    /**
+     * This method checks if the character is illegal in this language.
+     *
+     * @param c represents a character that will get checked.
+     * @return true if the character is illegal, false otherwise.
+     */
     private boolean isIllegal(char c) {
         return !String.valueOf(c).matches("[A-Za-z!#%->\\[\\]_{-}]");
     }

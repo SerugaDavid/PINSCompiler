@@ -81,7 +81,16 @@ public class Lexer {
                 continue;
             }
 
+            // illegal character
+            if (!type[2] && isIllegal(c)) {
+                Report.error("Illegal character '" + c + "' at line " + line + ", column " + column);
+                continue;
+            }
+
+            // word building
             word += c;
+            type = getType(word);
+
 
         }
 
@@ -130,5 +139,9 @@ public class Lexer {
             type[3] = true;
         }
         return type;
+    }
+
+    private boolean isIllegal(char c) {
+        return !String.valueOf(c).matches("[A-Za-z!#%->\\[\\]_{-}]");
     }
 }

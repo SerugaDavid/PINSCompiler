@@ -42,6 +42,9 @@ public class Main {
             }
         }
         if (cli.execPhase == Phase.LEX) {
+            for (var symbol : symbols) {
+                System.out.println(symbol.toString());
+            }
             return;
         }
     }

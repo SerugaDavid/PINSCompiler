@@ -129,5 +129,6 @@ public class Lexer {
         if (isSymbol(word)) {
             type[3] = true;
         }
+        return type;
     }
 }

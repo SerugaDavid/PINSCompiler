@@ -103,7 +103,7 @@ public class Lexer {
             if (c == '#' || (word.length() != 0 && word.charAt(0) == '#')) {
                 if (word.length() != 0 && word.charAt(0) != '#') {
                     // Handle the start of a comment and render the word
-                    symbol = renderWord(word, line, column);
+                    symbol = renderWord(word, line, column-1);
                     symbols.add(symbol);
                     column++;
                     word = "";
@@ -123,8 +123,26 @@ public class Lexer {
             // whitespace
             if (c == ' ' || c == '\t' || c == '\n' || c == '\r') {
                 if (word != "") {
+                    // handle strings with whitespace
+                    if (type[3] && !isString(word)) {
+                        if (c == '\n' || c == '\r') {
+                            // report error if string is not closed
+                            Location start = new Location(line, column - word.length() + 1);
+                            Location end = new Location(line, column);
+                            Position pos = new Position(start, end);
+                            Report.error(pos, "String not closed");
+                            continue;
+                        }
+                        word += c;
+                        if (c == '\t')
+                            column += 4;
+                        else
+                            column++;
+                        continue;
+                    }
+
                     // render the word when whitespace is encountered
-                    symbol = renderWord(word, line, column);
+                    symbol = renderWord(word, line, column-1);
                     symbols.add(symbol);
                     column++;
                     word = "";
@@ -152,7 +170,7 @@ public class Lexer {
             if (!anyType(type)) {
                 // render a word when a new type is encountered
                 word = word.substring(0, word.length() - 1);
-                symbol = renderWord(word, line, column);
+                symbol = renderWord(word, line, column - 1);
                 symbols.add(symbol);
                 word = "";
                 i--;
@@ -162,7 +180,7 @@ public class Lexer {
         }
 
         // add last word
-        if (word != "") {
+        if (!word.equals("")) {
             symbol = renderWord(word, line, column-1);
             symbols.add(symbol);
         }

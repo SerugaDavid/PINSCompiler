@@ -60,7 +60,8 @@ public class Lexer {
 
         // declare needed variables
         String word = "";
-        boolean[] type = {false, false, false, false};
+        // name, number, symbol, canBeString, string
+        boolean[] type = {false, false, false, false, false};
 
         int line = 1;
         int column = 1;
@@ -69,10 +70,25 @@ public class Lexer {
         for (int i = 0; i < this.source.length(); i++) {
             char c = this.source.charAt(i);
 
+            // comments
+            if (c == '#' || (word.length() != 0 && word.charAt(0) == '#')) {
+                if (word.length() != 0 && word.charAt(0) != '#') {
+                    // TODO: take care of the word
+                    word = "";
+                }
+                if (c == '\n' || c == '\r') {
+                    line++;
+                    column = 1;
+                    word = "";
+                    continue;
+                }
+                word += c;
+            }
+
             // whitespace
             if (c == ' ' || c == '\t' || c == '\n' || c == '\r') {
                 if (word != "") {
-                    // take care of the word
+                    // TODO: take care of the word
                 }
                 if (c == '\n' || c == '\r') {
                     line++;
@@ -144,18 +160,21 @@ public class Lexer {
     }
 
     private boolean[] getType(String word) {
-        boolean[] type = {false, false, false, false};
+        boolean[] type = {false, false, false, false, false};
         if (isName(word)) {
             type[0] = true;
         }
         if (isNumber(word)) {
             type[1] = true;
         }
-        if (canBeString(word)) {
+        if (isSymbol(word)) {
             type[2] = true;
         }
-        if (isSymbol(word)) {
+        if (canBeString(word)) {
             type[3] = true;
+        }
+        if (isString(word)) {
+            type[4] = true;
         }
         return type;
     }

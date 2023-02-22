@@ -111,7 +111,26 @@ public class Lexer {
     }
 
     private boolean canBeString(String word) {
-        return word.charAt(0) == '\'';
+        return isString(word) || (word.charAt(0) == '\'' && countChar(word, '\'')%2 == 1);
+    }
+
+    private boolean isString(String word) {
+        return word.charAt(0) == '\'' && word.charAt(word.length() - 1) == '\'' && countChar(word, '\'')%2 == 0;
+    }
+
+    private int countChar(String word, char c) {
+        int count = 0;
+        for (int i = 0; i < word.length(); i++) {
+            if (word.charAt(i) == c) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private boolean isValidString(String word) {
+        // TODO: implement
+        return false;
     }
 
     private boolean isSymbol(String word) {

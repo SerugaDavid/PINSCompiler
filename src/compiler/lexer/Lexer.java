@@ -283,8 +283,14 @@ public class Lexer {
      * @return rendered string.
      */
     private String renderString(String word) {
-        // TODO: implement
-        return "";
+        word = word.substring(1, word.length() - 1);
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < word.length(); i++) {
+            sb.append(word.charAt(i));
+            if (word.charAt(i) == '\'')
+                i++;
+        }
+        return sb.toString();
     }
 
     /**

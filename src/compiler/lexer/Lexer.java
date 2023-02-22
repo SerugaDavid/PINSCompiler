@@ -26,6 +26,7 @@ public class Lexer {
      * Preslikava iz ključnih besed v vrste simbolov.
      */
     private final static Map<String, TokenType> keywordMapping;
+    private final static Map<String, TokenType> operatorMapping;
 
     static {
         keywordMapping = new HashMap<>();
@@ -38,6 +39,33 @@ public class Lexer {
                 keywordMapping.put(str.substring("AT_".length()).toLowerCase(), token);
             }
         }
+
+        operatorMapping = new HashMap<>();
+        operatorMapping.put("+", OP_ADD);
+        operatorMapping.put("-", OP_SUB);
+        operatorMapping.put("*", OP_MUL);
+        operatorMapping.put("/", OP_DIV);
+        operatorMapping.put("%", OP_MOD);
+        operatorMapping.put("&", OP_AND);
+        operatorMapping.put("|", OP_OR);
+        operatorMapping.put("!", OP_NOT);
+        operatorMapping.put("==", OP_EQ);
+        operatorMapping.put("!=", OP_NEQ);
+        operatorMapping.put("=", OP_ASSIGN);
+        operatorMapping.put("(", OP_LPARENT);
+        operatorMapping.put(")", OP_RPARENT);
+        operatorMapping.put("[", OP_LBRACKET);
+        operatorMapping.put("]", OP_RBRACKET);
+        operatorMapping.put("{", OP_LBRACE);
+        operatorMapping.put("}", OP_RBRACE);
+        operatorMapping.put(":", OP_COLON);
+        operatorMapping.put(";", OP_SEMICOLON);
+        operatorMapping.put(".", OP_DOT);
+        operatorMapping.put(",", OP_COMMA);
+        operatorMapping.put("<", OP_LT);
+        operatorMapping.put(">", OP_GT);
+        operatorMapping.put("<=", OP_LEQ);
+        operatorMapping.put(">=", OP_GEQ);
     }
 
     /**
@@ -60,7 +88,8 @@ public class Lexer {
 
         // declare needed variables
         String word = "";
-        // name, number, symbol, canBeString, string
+        Symbol symbol;
+        // name, number, operator, canBeString, string
         boolean[] type = {false, false, false, false, false};
 
         int line = 1;
@@ -73,7 +102,9 @@ public class Lexer {
             // comments
             if (c == '#' || (word.length() != 0 && word.charAt(0) == '#')) {
                 if (word.length() != 0 && word.charAt(0) != '#') {
-                    // TODO: take care of the word
+                    symbol = renderWord(word, line, column);
+                    symbols.add(symbol);
+                    column++;
                     word = "";
                 }
                 if (c == '\n' || c == '\r') {
@@ -88,7 +119,10 @@ public class Lexer {
             // whitespace
             if (c == ' ' || c == '\t' || c == '\n' || c == '\r') {
                 if (word != "") {
-                    // TODO: take care of the word
+                    symbol = renderWord(word, line, column);
+                    symbols.add(symbol);
+                    column++;
+                    word = "";
                 }
                 if (c == '\n' || c == '\r') {
                     line++;
@@ -106,17 +140,59 @@ public class Lexer {
             // word building
             word += c;
             type = getType(word);
-
-
+            if (!anyType(type)) {
+                word = word.substring(0, word.length() - 1);
+                symbol = renderWord(word, line, column);
+                symbols.add(symbol);
+                word = "";
+                i--;
+            } else {
+                column++;
+            }
         }
 
-
-
-
+        // add last word
+        if (word != "") {
+            symbol = renderWord(word, line, column-1);
+            symbols.add(symbol);
+        }
+        symbols.add(new Symbol(new Location(line, column), new Location(line, column), EOF, "EOF"));
 
         return symbols;
     }
 
+    private Symbol renderWord(String word, int line, int column) {
+        Symbol symbol = null;
+        Location start = new Location(line, column - word.length() + 1);
+        Location end = new Location(line, column);
+        boolean[] type = getType(word);
+        if (type[0]) {
+            // name
+            TokenType token = keywordMapping.get(word);
+            if (token == null) {
+                if (word.equals("true") || word.equals("false"))
+                    token = C_LOGICAL;
+                else
+                    token = IDENTIFIER;
+            }
+            symbol = new Symbol(start, end, token, word);
+        }
+        if (type[1]) {
+            // number
+            symbol = new Symbol(start, end, C_INTEGER, word);
+        }
+        if (type[2]) {
+            // symbol
+            symbol = new Symbol(start, end, operatorMapping.get(word), word);
+        }
+        if (type[4]) {
+            // string
+            if (isValidString(word, line, column)) {
+                symbol = new Symbol(start, end, C_STRING, renderString(word));
+            }
+        }
+        return symbol;
+    }
 
     private boolean isName(String word) {
         return word.matches("[a-zA-Z_][a-zA-Z0-9_]*");
@@ -144,15 +220,26 @@ public class Lexer {
         return count;
     }
 
-    private boolean isValidString(String word) {
-        // TODO: implement
-        return false;
+    private boolean isValidString(String word, int line, int column) {
+        word = word.substring(1, word.length() - 1);
+        if (!word.matches("[ -~]*")) {
+            Location start = new Location(line, column - word.length() + 1);
+            Location end = new Location(line, column);
+            Position pos = new Position(start, end);
+            Report.error(pos, "Invalid string constant");
+        }
+        return true;
     }
 
-    private boolean isSymbol(String word) {
-        String[] symbols = {"+", "-", "*", "/", "%", "&", "|", "!", "==", "!=", "<", ">", "<=", ">=", "(", ")", "[", "]", "{", "}", ":", ";", ".", ",", "="};
-        for (String symbol : symbols) {
-            if (word.equals(symbol)) {
+    private String renderString(String word) {
+        // TODO: implement
+        return "";
+    }
+
+    private boolean isOperator(String word) {
+        String[] operators = {"+", "-", "*", "/", "%", "&", "|", "!", "==", "!=", "<", ">", "<=", ">=", "(", ")", "[", "]", "{", "}", ":", ";", ".", ",", "="};
+        for (String operator : operators) {
+            if (word.equals(operator)) {
                 return true;
             }
         }
@@ -167,7 +254,7 @@ public class Lexer {
         if (isNumber(word)) {
             type[1] = true;
         }
-        if (isSymbol(word)) {
+        if (isOperator(word)) {
             type[2] = true;
         }
         if (canBeString(word)) {
@@ -177,6 +264,14 @@ public class Lexer {
             type[4] = true;
         }
         return type;
+    }
+
+    private boolean anyType(boolean[] type) {
+        for (boolean b : type) {
+            if (b)
+                return true;
+        }
+        return false;
     }
 
     private boolean isIllegal(char c) {

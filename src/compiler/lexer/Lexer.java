@@ -100,7 +100,7 @@ public class Lexer {
             char c = this.source.charAt(i);
 
             // comments
-            if (c == '#' || (word.length() != 0 && word.charAt(0) == '#')) {
+            if ((!type[3] && c == '#') || (word.length() != 0 && word.charAt(0) == '#')) {
                 if (word.length() != 0 && word.charAt(0) != '#') {
                     // Handle the start of a comment and render the word
                     symbol = renderWord(word, line, column-1);
@@ -122,7 +122,7 @@ public class Lexer {
 
             // whitespace
             if (c == ' ' || c == '\t' || c == '\n' || c == '\r') {
-                if (word != "") {
+                if (!word.equals("")) {
                     // handle strings with whitespace
                     if (type[3] && !isString(word)) {
                         if (c == '\n' || c == '\r') {
@@ -156,7 +156,7 @@ public class Lexer {
             }
 
             // illegal character
-            if (!type[2] && isIllegal(c)) {
+            if (!type[3] && isIllegal(c)) {
                 Location start = new Location(line, column - word.length() + 1);
                 Location end = new Location(line, column);
                 Position pos = new Position(start, end);
@@ -232,6 +232,13 @@ public class Lexer {
                 symbol = new Symbol(start, end, C_STRING, renderString(word));
             }
         }
+
+        // error checking
+        if (symbol == null) {
+            Position pos = new Position(start, end);
+            Report.error(pos, "Can not generate symbol for word: '" + word + "'.\n" + printType(getType(word)));
+        }
+
         return symbol;
     }
 
@@ -393,5 +400,21 @@ public class Lexer {
      */
     private boolean isIllegal(char c) {
         return !String.valueOf(c).matches("[A-Za-z!#%->\\[\\]_{-}]");
+    }
+
+    /**
+     * This method prints the type of the word.
+     *
+     * @param type boolean[] array that represent the types of the word.
+     * @return String that represents the type of the word.
+     */
+    private String printType(boolean[] type) {
+        String s = "";
+        s += "Name: " + type[0] + "\n";
+        s += "Number: " + type[1] + "\n";
+        s += "Operator: " + type[2] + "\n";
+        s += "CouldBeString: " + type[3] + "\n";
+        s += "String: " + type[4] + "\n";
+        return s;
     }
 }

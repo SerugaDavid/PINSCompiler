@@ -224,7 +224,7 @@ public class Lexer {
         }
         if (type[1]) {
             // number
-            symbol = new Symbol(start, end, C_INTEGER, word);
+            symbol = new Symbol(start, end, C_INTEGER, String.valueOf(Integer.parseInt(word)));
         }
         if (type[2]) {
             // symbol

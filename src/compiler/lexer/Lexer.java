@@ -224,7 +224,7 @@ public class Lexer {
         }
         if (type[1]) {
             // number
-            symbol = new Symbol(start, end, C_INTEGER, String.valueOf(Integer.parseInt(word)));
+            symbol = new Symbol(start, end, C_INTEGER, removeLeadingZeros(word));
         }
         if (type[2]) {
             // symbol
@@ -264,6 +264,24 @@ public class Lexer {
      */
     private boolean isNumber(String word) {
         return word.matches("[0-9]*");
+    }
+
+    /**
+     * Removes leading zeros from a number.
+     * @param number current word with number
+     * @return number without leading zeros in String format
+     */
+    private String removeLeadingZeros(String number) {
+        int begin = -1;
+        for (int i = 0; i < number.length(); i++) {
+            if (number.charAt(i) != '0') {
+                begin = i;
+                break;
+            }
+        }
+        if (begin == -1)
+            return "0";
+        return number.substring(begin);
     }
 
     /**

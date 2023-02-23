@@ -9,3 +9,11 @@ To so stringi
 
 to so operatorji
 <>!=+-*/%&|==<=>=<==()[]{};:,.
+
+To so komentarji
+ime = 1 # to je komentar
+
+while if fun for
+true false
+
+logical integer string

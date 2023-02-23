@@ -20,6 +20,10 @@ public class TestLex {
         runTest(numberOfTests);
     }
 
+    /**
+     * Counts the number of all files inside test folder
+     * @return number of test files
+     */
     private static int getNumberOfTests() {
         int numberOfTests = 0;
         try {
@@ -31,6 +35,10 @@ public class TestLex {
         return numberOfTests;
     }
 
+    /**
+     * Deletes all .err files inside Tests/LEX
+     * Minimizes the confusion when comparing files
+     */
     private static void deleteErrFiles() {
         // delete all .err files inside Tests/LEX
         File folder = new File("src/Tests/LEX");
@@ -42,6 +50,10 @@ public class TestLex {
         }
     }
 
+    /**
+     * Runs all tests
+     * @param numberOfTests number of tests inside current folder
+     */
     private static void runTest(int numberOfTests) {
         String output = "";
         String expected = "";
@@ -65,6 +77,11 @@ public class TestLex {
         System.out.println("Passed: " + (int)countOK + "/" + numberOfTests + "; " + String.format("%.2f", countOK / numberOfTests * 100) + "%");
     }
 
+    /**
+     * Gets program output for a given test
+     * @param testNumber ID number of the test
+     * @return output produced by the program
+     */
     private static String getOutput(int testNumber) {
         String input = readFile("src/Tests/LEX/test" + String.format("%02d", testNumber) + ".pins");
         var symbols = new Lexer(input).scan();
@@ -76,6 +93,11 @@ public class TestLex {
         return output.toString();
     }
 
+    /**
+     * Reads file and returns its content as a string
+     * @param path path to the file
+     * @return content of the file
+     */
     private static String readFile(String path) {
         StringBuilder text = new StringBuilder();
         try {
@@ -86,12 +108,18 @@ public class TestLex {
             }
             sc.close();
         } catch (Exception e) {
-            System.out.println("Error while reading file!");
+            System.out.println("Error while reading file!\nFilename: " + path);
             System.exit(1);
         }
         return text.toString();
     }
 
+    /**
+     * Writes output to a file.
+     * Only happens for test that failed.
+     * @param output output produced by the program
+     * @param testNum ID number of the test
+     */
     private static void writeErrFile(String output, int testNum) {
         try {
             File file = new File("src/Tests/LEX/test" + String.format("%02d", testNum) + ".err");
@@ -100,7 +128,7 @@ public class TestLex {
             writer.write(output.strip());
             writer.close();
         } catch (IOException e) {
-            System.out.println("Error while writing file!");
+            System.out.println("Error while writing file!\nFilename: test" + String.format("%02d", testNum) + ".err");
             System.exit(1);
         }
     }

@@ -263,7 +263,7 @@ public class Lexer {
      * @return boolean true if the word is a valid number, false otherwise.
      */
     private boolean isNumber(String word) {
-        return word.matches("[0-9]|[1-9][0-9]*");
+        return word.matches("[0-9]*");
     }
 
     /**

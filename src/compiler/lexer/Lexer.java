@@ -144,13 +144,17 @@ public class Lexer {
                     // render the word when whitespace is encountered
                     symbol = renderWord(word, line, column-1);
                     symbols.add(symbol);
-                    column++;
                     word = "";
                 }
                 if (c == '\n' || c == '\r') {
                     // update line and column with new line
                     line++;
                     column = 1;
+                } else if (c == '\t') {
+                    // update column with tab
+                    column += 4;
+                } else {
+                    column++;
                 }
                 continue;
             }

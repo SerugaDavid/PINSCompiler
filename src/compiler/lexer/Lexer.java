@@ -108,7 +108,7 @@ public class Lexer {
                     column++;
                     word = "";
                 }
-                if (c == '\n' || c == '\r') {
+                if (c == '\n') {
                     // end a comment at the end of the line
                     line++;
                     column = 1;
@@ -125,7 +125,7 @@ public class Lexer {
                 if (!word.equals("")) {
                     // handle strings with whitespace
                     if (type[3] && !isString(word)) {
-                        if (c == '\n' || c == '\r') {
+                        if (c == '\n') {
                             // report error if string is not closed
                             Location start = new Location(line, column - word.length() + 1);
                             Location end = new Location(line, column);
@@ -146,7 +146,7 @@ public class Lexer {
                     symbols.add(symbol);
                     word = "";
                 }
-                if (c == '\n' || c == '\r') {
+                if (c == '\n') {
                     // update line and column with new line
                     line++;
                     column = 1;
@@ -185,8 +185,10 @@ public class Lexer {
 
         // add last word
         if (!word.equals("")) {
-            symbol = renderWord(word, line, column-1);
-            symbols.add(symbol);
+            if (word.charAt(0) != '#') {
+                symbol = renderWord(word, line, column - 1);
+                symbols.add(symbol);
+            }
         }
 
         // add EOF
@@ -224,7 +226,7 @@ public class Lexer {
         }
         if (type[1]) {
             // number
-            symbol = new Symbol(start, end, C_INTEGER, removeLeadingZeros(word));
+            symbol = new Symbol(start, end, C_INTEGER, word);
         }
         if (type[2]) {
             // symbol

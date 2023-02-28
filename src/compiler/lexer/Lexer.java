@@ -107,6 +107,7 @@ public class Lexer {
                     symbols.add(symbol);
                     column++;
                     word = "";
+                    type = resetType();
                 }
                 if (c == '\n') {
                     // end a comment at the end of the line
@@ -190,6 +191,7 @@ public class Lexer {
             if (word.charAt(0) != '#') {
                 symbol = renderWord(word, line, column - 1);
                 symbols.add(symbol);
+                type = resetType();
             }
         }
 

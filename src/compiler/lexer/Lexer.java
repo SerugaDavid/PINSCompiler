@@ -90,7 +90,7 @@ public class Lexer {
         String word = "";
         Symbol symbol;
         // name, number, operator, canBeString, string
-        boolean[] type = {false, false, false, false, false};
+        boolean[] type = resetType();
 
         int line = 1;
         int column = 1;
@@ -145,6 +145,7 @@ public class Lexer {
                     symbol = renderWord(word, line, column-1);
                     symbols.add(symbol);
                     word = "";
+                    type = resetType();
                 }
                 if (c == '\n') {
                     // update line and column with new line
@@ -172,12 +173,13 @@ public class Lexer {
             word += c;
             type = getType(word);
             if (!anyType(type)) {
-                // render a word when a new type is encountered
+                // render a word when no type is encountered
                 word = word.substring(0, word.length() - 1);
                 symbol = renderWord(word, line, column - 1);
                 symbols.add(symbol);
                 word = "";
                 i--;
+                type = resetType();
             } else {
                 column++;
             }
@@ -293,7 +295,8 @@ public class Lexer {
      * @return boolean true if the word could be a string, false otherwise.
      */
     private boolean canBeString(String word) {
-        return isString(word) || (word.charAt(0) == '\'' && countChar(word, '\'')%2 == 1);
+        boolean out = isString(word) || (word.charAt(0) == '\'' && countChar(word, '\'')%2 == 1);
+        return out;
     }
 
     /**
@@ -303,7 +306,7 @@ public class Lexer {
      * @return boolean true if the word is a valid string, false otherwise.
      */
     private boolean isString(String word) {
-        return word.charAt(0) == '\'' && word.charAt(word.length() - 1) == '\'' && countChar(word, '\'')%2 == 0;
+        return word.length() >= 2 && word.charAt(0) == '\'' && word.charAt(word.length() - 1) == '\'' && countChar(word, '\'')%2 == 0;
     }
 
     /**
@@ -374,6 +377,15 @@ public class Lexer {
             }
         }
         return false;
+    }
+
+    /**
+     * This method resets the type of the word.
+     *
+     * @return boolean[] array with only false.
+     */
+    private boolean[] resetType() {
+        return new boolean[] {false, false, false, false, false};
     }
 
     /**

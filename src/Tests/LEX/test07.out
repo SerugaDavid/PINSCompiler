@@ -23,4 +23,4 @@
 [1:28] OP_DOT:.
 [1:29] OP_COMMA:,
 [1:30] OP_ASSIGN:=
-EOF:EOF
+EOF:$

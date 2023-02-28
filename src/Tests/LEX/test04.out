@@ -6,4 +6,4 @@
 [4:6-4:9] C_LOGICAL:true
 [5:1-5:5] C_LOGICAL:false
 [5:7-5:11] C_LOGICAL:false
-EOF:EOF
+EOF:$

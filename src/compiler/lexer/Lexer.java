@@ -192,7 +192,7 @@ public class Lexer {
         }
 
         // add EOF
-        symbols.add(new Symbol(new Location(line, column), new Location(line, column), EOF, "EOF"));
+        symbols.add(new Symbol(new Location(line, column), new Location(line, column), EOF, "$"));
 
         return symbols;
     }

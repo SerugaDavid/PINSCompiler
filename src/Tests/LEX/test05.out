@@ -11,4 +11,4 @@
 [2:1-2:7] AT_LOGICAL:logical
 [2:9-2:15] AT_INTEGER:integer
 [2:17-2:22] AT_STRING:string
-EOF:EOF
+EOF:$

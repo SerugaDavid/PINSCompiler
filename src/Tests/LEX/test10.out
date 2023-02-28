@@ -1,0 +1,4 @@
+[1:1-1:2] C_INTEGER:10
+[1:3] OP_ADD:+
+[1:4-1:7] C_INTEGER:0020
+EOF:$

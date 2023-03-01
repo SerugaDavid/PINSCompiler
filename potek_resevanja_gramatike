@@ -1,0 +1,16 @@
+removing left recursion
+
+definitions: remove left recursion
+parameters: remove left recursion
+logical_ior_expression: remove left recursion
+logical_and_expression: remove left recursion
+additive_expression: remove left recursion
+multiplicative_expression: remove left recursion
+postfix_expression: remove left recursion
+expressions: remove left recursion
+
+removing left factorization
+
+expression: remove left factorization
+comparison_expression: remove left factorization
+atom_expression: remove left factorization

@@ -1,0 +1,252 @@
+ORIGINAL:
+
+source -> definitions .
+
+definitions -> definition .
+definitions -> definitions ";" definition .
+
+definition -> function_definition .
+definition -> type_definition .
+definition -> variable_definition .
+
+type_definition -> typ identifier ":" type .
+
+type -> identifier .
+type -> logical .
+type -> integer .
+type -> string .
+type -> arr "[" int_const "]" type .
+
+function_definition -> fun identifier "(" parameters ")" ":" type "=" expression .
+
+parameters -> parameter .
+parameters -> parameters "," parameter .
+
+parameter -> identifier ":" type .
+
+expression -> logical_ior_expression .
+expression -> logical_ior_expression "{" WHERE definitions "}" .
+
+logical_ior_expression -> logical_ior_expression "|" logical_and_expression .
+logical_ior_expression -> logical_and expression .
+
+logical_and_expression -> logical_and_expression "&" compare_expression .
+logical_and_expression -> compare_expression .
+
+compare_expression -> additive_expression "==" additive_expression .
+compare_expression -> additive_expression "!=" additive_expression .
+compare_expression -> additive_expression "<=" additive_expression .
+compare_expression -> additive_expression ">=" additive_expression .
+compare_expression -> additive_expression "<"  additive_expression .
+compare_expression -> additive_expression ">"  additive_expression .
+compare_expression -> additive_expression .
+
+additive_expression -> additive_expression "+" multiplicative_expression .
+additive_expression -> additive_expression "-" multiplicative_expression .
+additive_expression -> multiplicative_expression .
+
+multiplicative_expression -> multiplicative_expression "*" prefix_expression .
+multiplicative_expression -> multiplicative_expression "/" prefix_expression .
+multiplicative_expression -> multiplicative_expression "%" prefix_expression .
+multiplicative_expression -> prefix_expression .
+
+prefix_expression -> "+" prefix_expression .
+prefix_expression -> "-" prefix_expression .
+prefix_expression -> "!" prefix_expression .
+prefix_expression -> postfix_expression .
+
+postfix_expression -> postfix_expression "[" expression "]" .
+postfix_expression -> atom_expression .
+
+atom_expression -> log_constant .
+atom_expression -> int_constant .
+atom_expression -> str_constant .
+atom_expression -> identifier .
+atom_expression -> identifier "(" expressions ")" .
+atom_expression -> "{" expression "=" expression "}" .
+atom_expression -> "{" if expression ":" expression "}" .
+atom_expression -> "{" if expression then expression else expression "}" .
+atom_expression -> "{" while expression ":" expression "}" .
+atom_expression -> "{" for identifier "=" expression "," expression "," expression ":" expression "}" .
+atom_expression -> "(" expression ")" .
+
+expressions -> expression .
+expressions -> expressions "," expression .
+
+variable_definition -> var identifier ":" type .
+
+
+BREZ LEVE REKURZIJE:
+
+source -> definitions .
+
+definitions -> definition definitions2 .
+definitions2 -> ";" definition definitions2 .
+definitions2 -> .
+
+definition -> function_definition .
+definition -> type_definition .
+definition -> variable_definition .
+
+type_definition -> typ identifier ":" type .
+
+type -> identifier .
+type -> logical .
+type -> integer .
+type -> string .
+type -> arr "[" int_const "]" type .
+
+function_definition -> fun identifier "(" parameters ")" ":" type "=" expression .
+
+parameters -> parameter parameters2 .
+parameters2 -> "," parameter parameters2 .
+parameters2 -> .
+
+parameter -> identifier ":" type .
+
+expression -> logical_ior_expression .
+expression -> logical_ior_expression "{" WHERE definitions "}" .
+
+logical_ior_expression -> logical_and expression logical_ior_expression2 .
+logical_ior_expression2 -> "|" logical_and_expression logical_ior_expression2 .
+logical_ior_expression2 -> .
+
+logical_and_expression -> compare_expression logical_and_expression2 .
+logical_and_expression2 -> "&" compare_expression logical_and_expression2 .
+logical_and_expression2 -> .
+
+compare_expression -> additive_expression "==" additive_expression .
+compare_expression -> additive_expression "!=" additive_expression .
+compare_expression -> additive_expression "<=" additive_expression .
+compare_expression -> additive_expression ">=" additive_expression .
+compare_expression -> additive_expression "<" additive_expression .
+compare_expression -> additive_expression ">" additive_expression .
+compare_expression -> additive_expression .
+
+additive_expression -> multiplicative_expression additive_expression2 .
+additive_expression2 -> "+" multiplicative_expression additive_expression2 .
+additive_expression2 -> "-" multiplicative_expression additive_expression2 .
+additive_expression2 -> .
+
+multiplicative_expression -> prefix_expression multiplicative_expression2 .
+multiplicative_expression2 -> "*" prefix_expression multiplicative_expression2 .
+multiplicative_expression2 -> "/" prefix_expression multiplicative_expression2 .
+multiplicative_expression2 -> "%" prefix_expression multiplicative_expression2 .
+multiplicative_expression2 -> .
+
+prefix_expression -> "+" prefix_expression .
+prefix_expression -> "-" prefix_expression .
+prefix_expression -> "!" prefix_expression .
+prefix_expression -> postfix_expression .
+
+postfix_expression -> atom_expression postfix_expression2 .
+postfix_expression2 -> "[" expression "]" postfix_expression2 .
+postfix_expression2 -> .
+
+atom_expression -> log_constant .
+atom_expression -> int_constant .
+atom_expression -> str_constant .
+atom_expression -> identifier .
+atom_expression -> identifier "(" expressions ")" .
+atom_expression -> "{" expression "=" expression "}" .
+atom_expression -> "{" if expression ":" expression "}" .
+atom_expression -> "{" if expression then expression else expression "}" .
+atom_expression -> "{" while expression ":" expression "}" .
+atom_expression -> "{" for identifier "=" expression "," expression "," expression ":" expression "}" .
+atom_expression -> "(" expression ")" .
+
+expressions -> expression expressions2 .
+expressions2 -> "," expression expressions2 .
+expressions2 -> .
+
+variable_definition -> var identifier ":" type .
+
+
+LEVA FAKTORIZACIJA:
+
+source -> definitions .
+
+definitions -> definition definitions2 .
+definitions2 -> ";" definition definitions2 .
+definitions2 -> .
+
+definition -> function_definition .
+definition -> type_definition .
+definition -> variable_definition .
+
+type_definition -> typ identifier ":" type .
+
+type -> identifier .
+type -> logical .
+type -> integer .
+type -> string .
+type -> arr "[" int_const "]" type .
+
+function_definition -> fun identifier "(" parameters ")" ":" type "=" expression .
+
+parameters -> parameter parameters2 .
+parameters2 -> "," parameter parameters2 .
+parameters2 -> .
+
+parameter -> identifier ":" type .
+
+expression -> logical_ior_expression expression2 .
+expression2 -> "{" WHERE definitions "}" .
+expression2 -> .
+
+logical_ior_expression -> logical_and_expression logical_ior_expression2 .
+logical_ior_expression2 -> "|" logical_and_expression logical_ior_expression2 .
+logical_ior_expression2 -> .
+
+logical_and_expression -> compare_expression logical_and_expression2 .
+logical_and_expression2 -> "&" compare_expression logical_and_expression2 .
+logical_and_expression2 -> .
+
+compare_expression -> additive_expression compare_expression2 .
+compare_expression2 -> "==" additive_expression .
+compare_expression2 -> "!=" additive_expression .
+compare_expression2 -> "<=" additive_expression .
+compare_expression2 -> ">=" additive_expression .
+compare_expression2 -> "<" additive_expression .
+compare_expression2 -> ">" additive_expression .
+compare_expression2 -> .
+
+additive_expression -> multiplicative_expression additive_expression2 .
+additive_expression2 -> "+" multiplicative_expression additive_expression2 .
+additive_expression2 -> "-" multiplicative_expression additive_expression2 .
+additive_expression2 -> .
+
+multiplicative_expression -> prefix_expression multiplicative_expression2 .
+multiplicative_expression2 -> "*" prefix_expression multiplicative_expression2 .
+multiplicative_expression2 -> "/" prefix_expression multiplicative_expression2 .
+multiplicative_expression2 -> "%" prefix_expression multiplicative_expression2 .
+multiplicative_expression2 -> .
+
+prefix_expression -> "+" prefix_expression .
+prefix_expression -> "-" prefix_expression .
+prefix_expression -> "!" prefix_expression .
+prefix_expression -> postfix_expression .
+
+postfix_expression -> atom_expression postfix_expression2 .
+postfix_expression2 -> "[" expression "]" postfix_expression2 .
+postfix_expression2 -> .
+
+atom_expression -> log_constant .
+atom_expression -> int_constant .
+atom_expression -> str_constant .
+atom_expression -> identifier atom_expression2 .
+atom_expression2 -> "(" expressions ")" .
+atom_expression -> "{" atom_expression3 .
+atom_expression3 -> expression "=" expression "}" .
+atom_expression3 -> if expression atom_expression4 .
+atom_expression4 -> ":" expression "}" .
+atom_expression4 -> then expression else expression "}" .
+atom_expression3 -> while expression ":" expression "}" .
+atom_expression3 -> for identifier "=" expression "," expression "," expression ":" expression "}" .
+atom_expression -> "(" expression ")" .
+
+expressions -> expression expressions2 .
+expressions2 -> "," expression expressions2 .
+expressions2 -> .
+
+variable_definition -> var identifier ":" type .

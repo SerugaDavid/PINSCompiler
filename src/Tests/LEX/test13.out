@@ -1,5 +1,5 @@
-[1:1-1:4] C_LOGICAL:true
-[3:3-3:4] OP_LEQ:<=
-[3:5] OP_AND:&
-[5:6-5:10] C_LOGICAL:false
+[1:1-1:5] C_LOGICAL:true
+[3:3-3:5] OP_LEQ:<=
+[3:5-3:6] OP_AND:&
+[5:6-5:11] C_LOGICAL:false
 EOF:$

@@ -1,6 +1,6 @@
-[1:1-1:5] KW_WHILE:while
-[1:7-1:8] OP_NEQ:!=
-[1:10] OP_LBRACE:{
-[1:12-1:13] KW_IF:if
-[1:15-1:18] C_LOGICAL:true
+[1:1-1:6] KW_WHILE:while
+[1:7-1:9] OP_NEQ:!=
+[1:10-1:11] OP_LBRACE:{
+[1:12-1:14] KW_IF:if
+[1:15-1:19] C_LOGICAL:true
 EOF:$

@@ -129,7 +129,7 @@ public class Lexer {
                         if (c == '\n') {
                             // report error if string is not closed
                             Location start = new Location(line, column - word.length() + 1);
-                            Location end = new Location(line, column);
+                            Location end = new Location(line, column+1);
                             Position pos = new Position(start, end);
                             Report.error(pos, "String not closed");
                             continue;
@@ -164,7 +164,7 @@ public class Lexer {
             // illegal character
             if (!type[3] && isIllegal(c)) {
                 Location start = new Location(line, column - word.length() + 1);
-                Location end = new Location(line, column);
+                Location end = new Location(line, column + 1);
                 Position pos = new Position(start, end);
                 Report.error(pos, "Invalid character: '" + c + "'");
                 continue;
@@ -213,7 +213,7 @@ public class Lexer {
         // initialize symbol and locations
         Symbol symbol = null;
         Location start = new Location(line, column - word.length() + 1);
-        Location end = new Location(line, column);
+        Location end = new Location(line, column + 1);
 
         // check the type of the word
         boolean[] type = getType(word);
@@ -323,7 +323,7 @@ public class Lexer {
         word = word.substring(1, word.length() - 1);
         if (!word.matches("[ -~]*")) {
             Location start = new Location(line, column - word.length() + 1);
-            Location end = new Location(line, column);
+            Location end = new Location(line, column + 1);
             Position pos = new Position(start, end);
             Report.error(pos, "Invalid string constant");
         }

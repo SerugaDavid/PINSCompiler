@@ -236,11 +236,12 @@ atom_expression -> int_constant .
 atom_expression -> str_constant .
 atom_expression -> identifier atom_expression2 .
 atom_expression2 -> "(" expressions ")" .
+atom_expression2 -> .
 atom_expression -> "{" atom_expression3 "}".
 atom_expression3 -> expression "=" expression .
 atom_expression3 -> if expression then expression atom_expression4 .
-atom_expression4 -> .
 atom_expression4 -> else expression .
+atom_expression4 -> .
 atom_expression3 -> while expression ":" expression .
 atom_expression3 -> for identifier "=" expression "," expression "," expression ":" expression .
 atom_expression -> "(" expression ")" .

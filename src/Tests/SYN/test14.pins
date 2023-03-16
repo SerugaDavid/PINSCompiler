@@ -1,0 +1,2 @@
+# fail at function definition (':')
+fun id (a:integer, b:integer) colon integer = a + b

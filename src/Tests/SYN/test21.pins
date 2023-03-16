@@ -1,0 +1,2 @@
+# fail at atom expression ('}')
+fun id (a:integer, b:integer) : integer = a + 10 [ { 1 = 1 rbrace ] * b

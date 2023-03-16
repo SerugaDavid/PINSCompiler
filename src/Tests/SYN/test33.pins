@@ -1,0 +1,2 @@
+# fail at variable definition (':')
+var id colon integer

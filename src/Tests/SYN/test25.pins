@@ -1,0 +1,2 @@
+# fail at atom expression ('while :')
+fun id (a:integer, b:integer) : integer = { while a < b colon a = a + 1 }

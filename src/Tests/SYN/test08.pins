@@ -1,0 +1,2 @@
+# fail at type (arr int_const)
+typ id : arr [ moja_mami ] integer

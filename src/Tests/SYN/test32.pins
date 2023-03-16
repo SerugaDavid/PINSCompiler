@@ -1,0 +1,2 @@
+# fail at variable definition ('identifier')
+var 123 : integer

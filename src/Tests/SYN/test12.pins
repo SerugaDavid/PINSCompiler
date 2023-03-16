@@ -1,0 +1,2 @@
+# fail at function definition ('(')
+fun id lparent a:integer, b:integer) : integer = a + b

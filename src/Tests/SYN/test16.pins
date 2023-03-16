@@ -1,0 +1,2 @@
+# fail at parameter ('identifier')
+fun id (123:integer, b:integer) : integer = a + b

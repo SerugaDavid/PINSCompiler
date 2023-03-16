@@ -1,0 +1,2 @@
+# fail at expression ('}')
+fun id (a:integer, b:integer) : integer = 123 { where typ id : integer rbrace

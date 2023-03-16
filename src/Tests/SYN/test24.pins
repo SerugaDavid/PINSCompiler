@@ -1,0 +1,2 @@
+# fail at atom expression ('if then')
+fun id (a:integer, b:integer) : integer = { if a > b tthheenn a else b}

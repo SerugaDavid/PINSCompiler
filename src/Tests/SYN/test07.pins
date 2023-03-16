@@ -1,0 +1,2 @@
+# fail at type (arr [)
+typ id : arr h 15 ] integer

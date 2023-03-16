@@ -1,0 +1,2 @@
+# fail at atom expression ('for identifier')
+fun id (a:integer, b:integer) : integer = { for 123 = 0, i < a, i = i + 1 : c = c + i * a * b }

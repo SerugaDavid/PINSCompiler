@@ -1,0 +1,2 @@
+# fail at atom expression ('id )')
+fun id (a:integer, b:integer) : integer = a + 10 [ id ( 1 = 1 rparent ] * b

@@ -9,13 +9,20 @@ import static compiler.lexer.TokenType.*;
 import static common.RequireNonNull.requireNonNull;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import common.Report;
 import compiler.lexer.Position;
 import compiler.lexer.Symbol;
-import compiler.lexer.TokenType;
+import compiler.parser.ast.Ast;
+import compiler.parser.ast.def.*;
+import compiler.parser.ast.expr.Expr;
+import compiler.parser.ast.type.Array;
+import compiler.parser.ast.type.Atom;
+import compiler.parser.ast.type.Type;
+import compiler.parser.ast.type.TypeName;
 
 public class Parser {
     /**
@@ -40,150 +47,220 @@ public class Parser {
     /**
      * Izvedi sintaksno analizo.
      */
-    public void parse() {
-        parseSource();
+    public Ast parse() {
+        Defs ast = parseSource();
+        return ast;
     }
 
-    private void parseSource() {
+    private Defs parseSource() {
         dump("source -> definitions");
-        parseDefinitions();
+        Defs defs = parseDefinitions();
+        if (getSymbol().tokenType != EOF)
+            Report.error("Source\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected:\nEOF\n';'\n'}'");
+        return defs;
     }
 
-    private void parseDefinitions() {
+    private Defs parseDefinitions() {
         dump("definitions -> definition definitions2");
-        parseDefinition();
-        parseDefinitions2();
+        Def def = parseDefinition();
+        Defs left = new Defs(def.position, List.of(def));
+        return parseDefinitions2(left);
     }
 
-    private void parseDefinitions2() {
+    private Defs parseDefinitions2(Defs left) {
         if (getSymbol().tokenType == OP_SEMICOLON) {
             dump("definitions2 -> ; definition definitions2");
             skipSymbol();
-            parseDefinition();
-            parseDefinitions2();
-        } else if (getSymbol().tokenType == EOF) {
-            dump("definitions2 -> e");
-            return;
+            Def right = parseDefinition();
+            ArrayList defs = new ArrayList(left.definitions);
+            defs.add(right);
+            Defs maybeLeft = new Defs(
+                    new Position(
+                            left.position.start,
+                            right.position.end
+                    ),
+                    defs.stream().toList()
+            );
+            return parseDefinitions2(maybeLeft);
         } else {
-            Report.error("Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\n\nExprected: ';'");
+            dump("definitions2 -> e");
+            return left;
         }
     }
 
-    private void parseDefinition() {
-        boolean executed;
-        executed = parseTypeDefinition();
-        if (executed)
-            return;
-        executed = parseFunctionDefinition();
-        if (executed)
-            return;
-        parseVariableDefinition();
-    }
-
-    private boolean parseTypeDefinition() {
-        if (getSymbol().tokenType == KW_TYP) {
-            skipSymbol();
-            dump("definition -> type typeDefinition");
-            dump("type_definition -> typ identifier : type");
-            if (getSymbol().tokenType != IDENTIFIER)
-                Report.error("Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: IDENTIFIER");
-            skipSymbol();
-            if (getSymbol().tokenType != OP_COLON)
-                Report.error("Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: ':'");
-            skipSymbol();
-            parseType();
-            return true;
+    private Def parseDefinition() {
+        Position start = getSymbol().position;
+        switch (getSymbol().tokenType) {
+            case KW_TYP -> {
+                dump("definition -> type_definition");
+                skipSymbol();
+                return parseTypeDefinition(start);
+            }
+            case KW_FUN -> {
+                dump("definition -> function_definition");
+                skipSymbol();
+                return parseFunctionDefinition(start);
+            }
+            case KW_VAR -> {
+                dump("definition -> variable_definition");
+                skipSymbol();
+                return parseVariableDefinition(start);
+            }
+            default -> {
+                Report.error("VariableDefinition\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected:\nTYP\nFUN\nVAR");
+                return null;
+            }
         }
-        return false;
     }
 
-    private void parseType() {
+    private TypeDef parseTypeDefinition(Position start) {
+        dump("type_definition -> typ identifier : type");
+        if (getSymbol().tokenType != IDENTIFIER)
+            Report.error("TypeDefinition\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: IDENTIFIER");
+        String name = getSymbol().lexeme;
+        skipSymbol();
+        if (getSymbol().tokenType != OP_COLON)
+            Report.error("TypeDefinition\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: ':'");
+        skipSymbol();
+        Type type = parseType();
+        return new TypeDef(
+                new Position(
+                        start.start,
+                        type.position.end
+                ),
+                name,
+                type
+        );
+    }
+
+    private Type parseType() {
+        Symbol current = getSymbol();
         switch (getSymbol().tokenType) {
             case IDENTIFIER:
                 dump("type -> identifier");
-                break;
+                skipSymbol();
+                return new TypeName(current.position, current.lexeme);
             case AT_LOGICAL:
                 dump("type -> logical");
-                break;
+                skipSymbol();
+                return Atom.LOG(current.position);
             case AT_INTEGER:
                 dump("type -> integer");
-                break;
+                skipSymbol();
+                return Atom.INT(current.position);
             case AT_STRING:
                 dump("type -> string");
-                break;
+                skipSymbol();
+                return Atom.STR(current.position);
             case KW_ARR:
                 dump("type -> arr [ int_const ] type");
+                skipSymbol();
                 if (getSymbol().tokenType != OP_LBRACKET)
-                    Report.error("Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: '['");
+                    Report.error("Type\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: '['");
                 skipSymbol();
                 if (getSymbol().tokenType != C_INTEGER)
-                    Report.error("Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: C_INTEGER");
+                    Report.error("Type\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: C_INTEGER");
+                int size = Integer.parseInt(getSymbol().lexeme);
                 skipSymbol();
                 if (getSymbol().tokenType != OP_RBRACKET)
-                    Report.error("Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: ']'");
+                    Report.error("Type\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: ']'");
                 skipSymbol();
-                parseType();
+                Type right = parseType();
+                return new Array(
+                        new Position(
+                                current.position.start,
+                                right.position.end
+                        ),
+                        size,
+                        right
+                );
             default:
-                Report.error("Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected:\nIDENTIFIER\n¸AT_LOGICAL\nAT_INTEGER\nAT_STRING\nKW_ARR");
+                Report.error("Type\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected:\nIDENTIFIER\nAT_LOGICAL\nAT_INTEGER\nAT_STRING\nKW_ARR");
         }
+        return null;
     }
 
-    private boolean parseFunctionDefinition() {
-        if (getSymbol().tokenType == KW_FUN) {
-            skipSymbol();
-            dump("definition -> function_definition");
-            dump("function_definition -> fun identifier ( parameters ) : type = expression");
-            if (getSymbol().tokenType != IDENTIFIER)
-                Report.error("Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: IDENTIFIER");
-            skipSymbol();
-            if (getSymbol().tokenType != OP_LPARENT)
-                Report.error("Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: '('");
-            skipSymbol();
-            parseParameters();
-            if (getSymbol().tokenType != OP_RPARENT)
-                Report.error("Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: ')'");
-            if (getSymbol().tokenType != OP_COLON)
-                Report.error("Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: ':'");
-            parseType();
-            if (getSymbol().tokenType != OP_ASSIGN)
-                Report.error("Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: '='");
-            parseExpression();
-            return true;
-        }
-        return false;
+    private FunDef parseFunctionDefinition(Position start) {
+        dump("function_definition -> fun identifier ( parameters ) : type = expression");
+        if (getSymbol().tokenType != IDENTIFIER)
+            Report.error("FunctionDefinition\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: IDENTIFIER");
+        String name = getSymbol().lexeme;
+        skipSymbol();
+        if (getSymbol().tokenType != OP_LPARENT)
+            Report.error("FunctionDefinition\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: '('");
+        skipSymbol();
+        List<FunDef.Parameter> parameters = parseParameters();
+        if (getSymbol().tokenType != OP_RPARENT)
+            Report.error("FunctionDefinition\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: ')'");
+        skipSymbol();
+        if (getSymbol().tokenType != OP_COLON)
+            Report.error("FunctionDefinition\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: ':'");
+        skipSymbol();
+        Type type = parseType();
+        if (getSymbol().tokenType != OP_ASSIGN)
+            Report.error("FunctionDefinition\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: '='");
+        skipSymbol();
+        Expr expr = parseExpression();
+        return new FunDef(
+                new Position(
+                        start.start,
+                        expr.position.end
+                ),
+                name,
+                parameters,
+                type,
+                expr
+        );
     }
 
-    private void parseParameters() {
+    private List<FunDef.Parameter> parseParameters() {
         dump("parameters -> parameter parameters2");
-        parseParameter();
-        parseParameters2();
+        FunDef.Parameter left = parseParameter();
+        ArrayList<FunDef.Parameter> parameters = new ArrayList<>();
+        parameters.add(left);
+        parameters.addAll(parseParameters2());
+        return parameters.stream().toList();
     }
 
-    private void parseParameters2() {
+    private List<FunDef.Parameter> parseParameters2() {
         if (getSymbol().tokenType == OP_COMMA) {
             skipSymbol();
             dump("parameters2 -> , parameter parameters2");
-            parseParameter();
-            parseParameters2();
+            FunDef.Parameter right = parseParameter();
+            ArrayList<FunDef.Parameter> parameters = new ArrayList<>();
+            parameters.add(right);
+            parameters.addAll(parseParameters2());
+            return parameters.stream().toList();
         } else
             dump("parameters2 -> e");
+        return new ArrayList<FunDef.Parameter>().stream().toList();
     }
 
-    private void parseParameter() {
+    private FunDef.Parameter parseParameter() {
         dump("parameter -> identifier : type");
         if (getSymbol().tokenType != IDENTIFIER)
-            Report.error("Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: IDENTIFIER");
+            Report.error("Parameter\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: IDENTIFIER");
+        Symbol name = getSymbol();
         skipSymbol();
         if (getSymbol().tokenType != OP_COLON)
-            Report.error("Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: ':'");
+            Report.error("Parameter\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: ':'");
         skipSymbol();
-        parseType();
+        Type type = parseType();
+        return new FunDef.Parameter(
+                new Position(
+                        name.position.start,
+                        type.position.end
+                ),
+                name.lexeme,
+                type
+        );
     }
 
-    private void parseExpression() {
+    private Expr parseExpression() {
         dump("expression -> logical_ior_expression expression2");
         parseLogicalIORExpression();
         parseExpression2();
+        return null;
     }
 
     private void parseExpression2() {
@@ -191,11 +268,11 @@ public class Parser {
             dump("expression2 -> { WHERE definitions }");
             skipSymbol();
             if (getSymbol().tokenType != KW_WHERE)
-                Report.error("Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: WHERE");
+                Report.error("Expression2\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: WHERE");
             skipSymbol();
             parseDefinitions();
             if (getSymbol().tokenType != OP_RBRACE)
-                Report.error("Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: '}'");
+                Report.error("Expression2\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: '}'");
             skipSymbol();
         } else
             dump("expression2 -> e");
@@ -324,7 +401,7 @@ public class Parser {
             skipSymbol();
             parseExpression();
             if (getSymbol().tokenType != OP_RBRACKET)
-                Report.error("Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: ']'");
+                Report.error("PostfixExpression2\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: ']'");
             skipSymbol();
             parsePostfixExpression2();
         } else
@@ -347,16 +424,17 @@ public class Parser {
                 skipSymbol();
                 parseAtomExpression3();
                 if (getSymbol().tokenType != OP_RBRACE)
-                    Report.error("Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: '}'");
+                    Report.error("AtomExpression\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: '}'");
             }
             case OP_LPARENT -> {
                 dump("atom_expression -> ( expression )");
                 skipSymbol();
-                parseExpression();
+                parseExpressions();
                 if (getSymbol().tokenType != OP_RPARENT)
-                    Report.error("Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: ')'");
+                    Report.error("AtomExpression\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: ')'");
             }
-            default -> Report.error("Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected:\nC_LOGICAL\nC_INTEGER\nC_STRING\nIDENTIFIER\nOP_LBRACE\nOP_LPARENT");
+            default ->
+                    Report.error("AtomExpression\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected:\nC_LOGICAL\nC_INTEGER\nC_STRING\nIDENTIFIER\nOP_LBRACE\nOP_LPARENT");
         }
         skipSymbol();
     }
@@ -367,7 +445,7 @@ public class Parser {
             skipSymbol();
             parseExpressions();
             if (getSymbol().tokenType != OP_RPARENT)
-                Report.error("Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: ')'");
+                Report.error("AtomExpression2\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: ')'");
         } else {
             dump("atom_expression2 -> e");
             this.index--;
@@ -381,7 +459,7 @@ public class Parser {
                 skipSymbol();
                 parseExpression();
                 if (getSymbol().tokenType != KW_THEN)
-                    Report.error("Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: KW_THEN");
+                    Report.error("AtomExpression3\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: KW_THEN");
                 skipSymbol();
                 parseExpression();
                 parseAtomExpression4();
@@ -391,7 +469,7 @@ public class Parser {
                 skipSymbol();
                 parseExpression();
                 if (getSymbol().tokenType != OP_COLON)
-                    Report.error("Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: ':'");
+                    Report.error("AtomExpression3\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: ':'");
                 skipSymbol();
                 parseExpression();
             }
@@ -399,22 +477,22 @@ public class Parser {
                 dump("atom_expression3 -> for identifier = expression , expression , expression : expression");
                 skipSymbol();
                 if (getSymbol().tokenType != IDENTIFIER)
-                    Report.error("Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: IDENTIFIER");
+                    Report.error("AtomExpression3\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: IDENTIFIER");
                 skipSymbol();
                 if (getSymbol().tokenType != OP_ASSIGN)
-                    Report.error("Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: '='");
+                    Report.error("AtomExpression3\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: '='");
                 skipSymbol();
                 parseExpression();
                 if (getSymbol().tokenType != OP_COMMA)
-                    Report.error("Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: ','");
+                    Report.error("AtomExpression3\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: ','");
                 skipSymbol();
                 parseExpression();
                 if (getSymbol().tokenType != OP_COMMA)
-                    Report.error("Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: ','");
+                    Report.error("AtomExpression3\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: ','");
                 skipSymbol();
                 parseExpression();
                 if (getSymbol().tokenType != OP_COLON)
-                    Report.error("Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: ':'");
+                    Report.error("AtomExpression3\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: ':'");
                 skipSymbol();
                 parseExpression();
             }
@@ -422,7 +500,7 @@ public class Parser {
                 dump("atom_expression3 -> expression = expression");
                 parseExpression();
                 if (getSymbol().tokenType != OP_ASSIGN)
-                    Report.error("Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: '='");
+                    Report.error("AtomExpression3\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: '='");
                 skipSymbol();
                 parseExpression();
             }
@@ -454,18 +532,24 @@ public class Parser {
             dump("expressions2 -> e");
     }
 
-    private void parseVariableDefinition() {
-        if (getSymbol().tokenType != KW_VAR)
-            Report.error("Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected:\nTYP\nFUN\nVAR");
-        skipSymbol();
+    private VarDef parseVariableDefinition(Position start) {
         dump("variable_definition -> var identifier : type");
         if (getSymbol().tokenType != IDENTIFIER)
-            Report.error("Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: IDENTIFIER");
+            Report.error("VariableDefinition\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: IDENTIFIER");
+        String name = getSymbol().lexeme;
         skipSymbol();
         if (getSymbol().tokenType != OP_COLON)
-            Report.error("Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: ':'");
+            Report.error("VariableDefinition\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: ':'");
         skipSymbol();
-        parseType();
+        Type type = parseType();
+        return new VarDef(
+                new Position(
+                        start.start,
+                        type.position.end
+                ),
+                name,
+                type
+        );
     }
 
     /**
@@ -479,6 +563,7 @@ public class Parser {
 
     /**
      * Gets current symbol from the list of Symbols.
+     *
      * @return Symbol.
      */
     private Symbol getSymbol() {
@@ -494,6 +579,7 @@ public class Parser {
 
     /**
      * Gets current symbol and advances to the next symbol
+     *
      * @return Current Symbol
      */
     private Symbol nextSymbol() {

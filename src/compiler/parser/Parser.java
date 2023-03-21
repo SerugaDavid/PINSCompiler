@@ -18,7 +18,9 @@ import compiler.lexer.Position;
 import compiler.lexer.Symbol;
 import compiler.parser.ast.Ast;
 import compiler.parser.ast.def.*;
+import compiler.parser.ast.expr.Binary;
 import compiler.parser.ast.expr.Expr;
+import compiler.parser.ast.expr.Where;
 import compiler.parser.ast.type.Array;
 import compiler.parser.ast.type.Atom;
 import compiler.parser.ast.type.Type;
@@ -258,46 +260,80 @@ public class Parser {
 
     private Expr parseExpression() {
         dump("expression -> logical_ior_expression expression2");
-        parseLogicalIORExpression();
-        parseExpression2();
-        return null;
+        Expr expression = parseLogicalIORExpression();
+        Expr where = parseExpression2(expression);
+        return where;
     }
 
-    private void parseExpression2() {
+    private Expr parseExpression2(Expr expression) {
         if (getSymbol().tokenType == OP_LBRACE) {
             dump("expression2 -> { WHERE definitions }");
             skipSymbol();
             if (getSymbol().tokenType != KW_WHERE)
                 Report.error("Expression2\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: WHERE");
             skipSymbol();
-            parseDefinitions();
+            Defs defs = parseDefinitions();
             if (getSymbol().tokenType != OP_RBRACE)
                 Report.error("Expression2\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: '}'");
+            Position end = getSymbol().position;
             skipSymbol();
+            return new Where(
+                    new Position(
+                            expression.position.start,
+                            end.end
+                    ),
+                    expression,
+                    defs
+            );
         } else
             dump("expression2 -> e");
+        return expression;
     }
 
-    private void parseLogicalIORExpression() {
+    private Expr parseLogicalIORExpression() {
         dump("logical_ior_expression -> logical_and_expression logical_ior_expression2");
-        parseLogicalANDExpression();
-        parseLogicalIORExpression2();
+        Expr left = parseLogicalANDExpression();
+        Expr right = parseLogicalIORExpression2();
+        if (right == null)
+            return left;
+        return new Binary(
+                new Position(
+                        left.position.start,
+                        right.position.end
+                ),
+                left,
+                Binary.Operator.OR,
+                right
+        );
     }
 
-    private void parseLogicalIORExpression2() {
+    private Expr parseLogicalIORExpression2() {
         if (getSymbol().tokenType == OP_OR) {
             dump("logical_ior_expression2 -> | logical_and_expression logical_ior_expression2");
             skipSymbol();
-            parseLogicalANDExpression();
-            parseLogicalIORExpression2();
+            Expr left = parseLogicalANDExpression();
+            Expr right = parseLogicalIORExpression2();
+            if (right == null)
+                return left;
+            return new Binary(
+                    new Position(
+                            left.position.start,
+                            right.position.end
+                    ),
+                    left,
+                    Binary.Operator.OR,
+                    right
+            );
         } else
             dump("logical_ior_expression2 -> e");
+        return null;
     }
 
-    private void parseLogicalANDExpression() {
+    private Expr parseLogicalANDExpression() {
         dump("logical_and_expression -> compare_expression logical_and_expression2");
         parseCompareExpression();
         parseLogicalANDExpression2();
+        return null;
     }
 
     private void parseLogicalANDExpression2() {

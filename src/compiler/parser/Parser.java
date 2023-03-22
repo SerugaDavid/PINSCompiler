@@ -176,8 +176,8 @@ public class Parser {
                 );
             default:
                 Report.error("Type\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected:\nIDENTIFIER\nAT_LOGICAL\nAT_INTEGER\nAT_STRING\nKW_ARR");
+                return null;
         }
-        return null;
     }
 
     private FunDef parseFunctionDefinition(Position start) {
@@ -563,11 +563,7 @@ public class Parser {
                 Position start = getSymbol().position;
                 skipSymbol();
                 Expr expr = parseAtomExpression3(start);
-                // TODO: handle this brace
-//                if (getSymbol().tokenType != OP_RBRACE)
-//                    Report.error("AtomExpression\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: '}'");
-//                Position end = getSymbol().position;
-//                skipSymbol();
+                return expr;
             }
             case OP_LPARENT -> {
                 dump("atom_expression -> ( expression )");
@@ -743,7 +739,7 @@ public class Parser {
         ArrayList<Expr> exprs = new ArrayList<>();
         exprs.add(expr);
         Block blockExprs = parseExpressions2(exprs);
-        return null;
+        return blockExprs;
     }
 
     private Block parseExpressions2(ArrayList<Expr> exprs) {

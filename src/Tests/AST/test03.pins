@@ -1,0 +1,1 @@
+fun funkcija ( x : logical, b : string ) : string = 'abc'

@@ -1,0 +1,220 @@
+Defs [1:1-39:13]
+  TypeDef [1:1-1:17]: prvic
+    Atom [1:11-1:17]: STR
+  TypeDef [2:1-2:21]: drugic
+    Atom [2:14-2:21]: INT
+  TypeDef [3:1-3:23]: tretjic
+    TypeName [3:15-3:23]: besedilo
+  TypeDef [4:1-4:35]: cetrtic
+    Array [4:14-4:35]
+      [7]
+      Array [4:21-4:35]
+        [7]
+        Atom [4:28-4:35]: LOG
+  VarDef [5:1-5:31]: petic
+    Array [5:13-5:31]
+      [10]
+      Atom [5:24-5:31]: INT
+  FunDef [7:1-38:6]: prvaFunkcija
+    Parameter [7:19-7:31]: prvic
+      Atom [7:25-7:31]: STR
+    Parameter [7:33-7:47]: drugic
+      Atom [7:40-7:47]: INT
+    Parameter [7:49-7:71]: cetrtic
+      Array [7:57-7:71]
+        [7]
+        Atom [7:64-7:71]: LOG
+    Atom [7:75-7:82]: INT
+    Where [8:1-38:6]
+      Defs [11:5-38:6]
+        FunDef [11:5-37:11]: drugaFunkcija
+          Parameter [11:23-11:36]: nekaj
+            Atom [11:29-11:36]: INT
+          Atom [11:38-11:45]: INT
+          Binary [12:9-37:11]: ASSIGN
+            IfThenElse [13:13-20:15]
+              Name [13:18-13:22]: haha
+              IfThenElse [13:28-19:18]
+                Name [14:24-14:29]: nekaj
+                Binary [14:35-14:51]: ADD
+                  Binary [14:35-14:42]: SUB
+                    Binary [14:35-14:40]: SUB
+                      Binary [14:35-14:38]: ADD
+                        Literal [14:35-14:36]: INT(5)
+                        Literal [14:37-14:38]: INT(3)
+                      Literal [14:39-14:40]: INT(1)
+                    Literal [14:41-14:42]: INT(4)
+                  Binary [14:43-14:51]: MUL
+                    Literal [14:43-14:44]: INT(2)
+                    Literal [14:47-14:51]: LOG(true)
+                While [14:57-18:22]
+                  Binary [15:31-15:67]: GEQ
+                    Name [15:31-15:36]: nekaj
+                    Binary [15:40-15:67]: ADD
+                      Binary [15:40-15:58]: MUL
+                        Name [15:40-15:45]: nekaj
+                        Block [15:48-15:58]
+                          Unary [15:49-15:57]: SUB
+                            Literal [15:50-15:57]: INT(5323223)
+                      Unary [15:61-15:67]: SUB
+                        Literal [15:62-15:67]: INT(44545)
+                  For [15:73-17:26]
+                    Name [16:33-16:38]: nekaj
+                    Literal [16:41-16:42]: INT(1)
+                    Binary [16:44-16:61]: GEQ
+                      Name [16:44-16:49]: nekaj
+                      Unary [16:53-16:61]: SUB
+                        Literal [16:54-16:61]: INT(9999999)
+                    Binary [16:63-16:81]: SUB
+                      Binary [16:63-16:79]: SUB
+                        Binary [16:63-16:77]: SUB
+                          Binary [16:63-16:75]: SUB
+                            Name [16:63-16:73]: nekajnekaj
+                            Literal [16:74-16:75]: INT(1)
+                          Literal [16:76-16:77]: INT(1)
+                        Literal [16:78-16:79]: INT(1)
+                      Literal [16:80-16:81]: INT(1)
+                    Name [16:82-16:87]: nekaj
+            Where [21:11-36:14]
+              Defs [22:13-36:14]
+                FunDef [22:13-35:18]: epicBubblesort
+                  Parameter [22:32-22:52]: polje
+                    Array [22:38-22:52]
+                      [10]
+                      Atom [22:45-22:52]: INT
+                  TypeName [22:54-22:58]: void
+                  Binary [23:17-35:18]: AND
+                    Binary [23:17-24:26]: AND
+                      Binary [23:17-23:34]: EQ
+                        Name [23:17-23:18]: n
+                        Name [23:22-23:34]: dolzinaPolja
+                      Binary [24:17-24:26]: EQ
+                        Name [24:17-24:21]: temp
+                        Literal [24:25-24:26]: INT(0)
+                    For [24:29-35:18]
+                      Name [25:21-25:22]: i
+                      Literal [25:23-25:24]: INT(0)
+                      Binary [25:25-25:28]: LT
+                        Name [25:25-25:26]: i
+                        Name [25:27-25:28]: n
+                      Binary [25:29-25:34]: ADD
+                        Name [25:29-25:30]: i
+                        Literal [25:33-25:34]: INT(1)
+                      For [26:21-34:22]
+                        Name [26:27-26:28]: j
+                        Literal [26:29-26:30]: INT(0)
+                        Binary [26:32-26:39]: LT
+                          Name [26:32-26:33]: j
+                          Block [26:34-26:39]
+                            Binary [26:35-26:38]: SUB
+                              Name [26:35-26:36]: n
+                              Name [26:37-26:38]: i
+                        Binary [26:40-26:45]: ADD
+                          Name [26:40-26:41]: j
+                          Literal [26:44-26:45]: INT(1)
+                        IfThenElse [27:25-33:26]
+                          Binary [28:32-28:53]: GT
+                            Binary [28:32-28:42]: ARR
+                              Name [28:32-28:37]: polje
+                              Binary [28:38-28:41]: SUB
+                                Name [28:38-28:39]: j
+                                Literal [28:40-28:41]: INT(1)
+                            Binary [28:45-28:53]: ARR
+                              Name [28:45-28:50]: polje
+                              Name [28:51-28:52]: j
+                          Binary [29:33-32:42]: AND
+                            Binary [29:33-31:49]: AND
+                              Binary [29:33-30:55]: AND
+                                Binary [29:33-29:51]: EQ
+                                  Name [29:33-29:37]: temp
+                                  Binary [29:41-29:51]: ARR
+                                    Name [29:41-29:46]: polje
+                                    Binary [29:47-29:50]: SUB
+                                      Name [29:47-29:48]: j
+                                      Literal [29:49-29:50]: INT(1)
+                                Binary [30:33-30:55]: EQ
+                                  Binary [30:33-30:43]: ARR
+                                    Name [30:33-30:38]: polje
+                                    Binary [30:39-30:42]: SUB
+                                      Name [30:39-30:40]: j
+                                      Literal [30:41-30:42]: INT(1)
+                                  Binary [30:47-30:55]: ARR
+                                    Name [30:47-30:52]: polje
+                                    Name [30:53-30:54]: j
+                              Binary [31:33-31:49]: EQ
+                                Binary [31:33-31:41]: ARR
+                                  Name [31:33-31:38]: polje
+                                  Name [31:39-31:40]: j
+                                Name [31:45-31:49]: temp
+                            Name [32:33-32:42]: blablabla
+              Name [21:11-21:35]: celotenprogramtideluje69
+      Binary [8:1-10:68]: OR
+        Binary [8:1-10:19]: OR
+          Binary [8:1-9:72]: OR
+            Binary [8:1-9:49]: OR
+              Binary [8:1-8:23]: AND
+                Binary [8:1-8:16]: EQ
+                  Binary [8:1-8:10]: SUB
+                    Binary [8:1-8:6]: ADD
+                      Literal [8:1-8:2]: INT(5)
+                      Literal [8:5-8:6]: INT(3)
+                    Literal [8:9-8:10]: INT(2)
+                  Literal [8:14-8:16]: INT(10)
+                Literal [8:19-8:23]: LOG(true)
+              Binary [8:26-9:49]: NEQ
+                Binary [8:26-8:79]: MOD
+                  Binary [8:26-8:69]: MUL
+                    Binary [8:26-8:46]: DIV
+                      Name [8:26-8:32]: beseda
+                      Name [8:35-8:46]: drugabeseda
+                    Literal [8:49-8:69]: STR(danesjelepdanaaaaa)
+                  Name [8:72-8:79]: cetrtic
+                Binary [8:83-9:49]: SUB
+                  Binary [8:83-9:41]: ADD
+                    Binary [8:83-9:35]: ADD
+                      Binary [8:83-9:8]: SUB
+                        Binary [8:83-8:97]: SUB
+                          Binary [8:83-8:92]: ADD
+                            Name [8:83-8:88]: petic
+                            Literal [8:91-8:92]: INT(5)
+                          Unary [8:95-8:97]: NOT
+                            Name [8:96-8:97]: e
+                        Block [9:3-9:8]
+                          Unary [9:4-9:7]: SUB
+                            Literal [9:5-9:7]: INT(10)
+                      Binary [9:11-9:35]: DIV
+                        Block [9:11-9:22]
+                          Unary [9:12-9:21]: ADD
+                            Block [9:13-9:21]
+                              Unary [9:14-9:20]: ADD
+                                Block [9:15-9:20]
+                                  Unary [9:16-9:19]: SUB
+                                    Literal [9:17-9:19]: INT(10)
+                        Block [9:25-9:35]
+                          Unary [9:26-9:34]: NOT
+                            Name [9:27-9:34]: cetrtic
+                    Literal [9:38-9:41]: INT(100)
+                  Literal [9:44-9:49]: LOG(false)
+            Binary [9:52-9:72]: AND
+              Name [9:52-9:57]: nekaj
+              Binary [9:60-9:72]: EQ
+                Name [9:60-9:65]: nekaj
+                Name [9:69-9:72]: bla
+          Binary [9:75-10:19]: AND
+            Binary [9:75-9:90]: GEQ
+              Name [9:75-9:80]: nekaj
+              Name [9:84-9:90]: blabla
+            Binary [10:1-10:19]: LEQ
+              Name [10:1-10:6]: nekaj
+              Name [10:10-10:19]: blablabla
+        Binary [10:22-10:68]: AND
+          Binary [10:22-10:41]: LT
+            Binary [10:22-10:35]: ADD
+              Name [10:22-10:27]: nekaj
+              Name [10:30-10:35]: nekaj
+            Name [10:38-10:41]: bla
+          Binary [10:44-10:68]: GT
+            Binary [10:44-10:57]: SUB
+              Name [10:44-10:49]: nekaj
+              Name [10:52-10:57]: nekaj
+            Name [10:60-10:68]: nekajbla

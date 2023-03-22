@@ -1,0 +1,8 @@
+Defs [1:1-1:58]
+  FunDef [1:1-1:58]: funkcija
+    Parameter [1:16-1:27]: x
+      Atom [1:20-1:27]: LOG
+    Parameter [1:29-1:39]: b
+      Atom [1:33-1:39]: STR
+    Atom [1:44-1:50]: STR
+    Literal [1:53-1:58]: STR(abc)

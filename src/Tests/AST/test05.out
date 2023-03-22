@@ -1,0 +1,35 @@
+Defs [1:1-11:2]
+  TypeDef [1:1-1:14]: i
+    Atom [1:7-1:14]: INT
+  VarDef [2:1-2:13]: j
+    Atom [2:7-2:13]: STR
+  FunDef [3:1-11:2]: prestejCrke
+    Parameter [3:18-3:27]: i
+      Atom [3:20-3:27]: INT
+    Parameter [3:29-3:37]: j
+      Atom [3:31-3:37]: STR
+    Atom [3:40-3:47]: INT
+    While [3:50-11:2]
+      Block [4:11-4:25]
+        Binary [4:12-4:24]: LT
+          Name [4:12-4:13]: i
+          Binary [4:16-4:24]: ARR
+            Name [4:16-4:17]: j
+            Binary [4:18-4:23]: DIV
+              Literal [4:18-4:21]: INT(100)
+              Literal [4:22-4:23]: INT(2)
+      For [5:9-10:10]
+        Name [6:17-6:18]: i
+        Literal [6:21-6:23]: INT(10)
+        Binary [6:25-6:32]: LT
+          Name [6:25-6:26]: i
+          Literal [6:29-6:32]: INT(100)
+        Binary [6:34-6:39]: ADD
+          Name [6:34-6:35]: i
+          Literal [6:38-6:39]: INT(1)
+        IfThenElse [7:17-9:18]
+          Binary [8:24-8:31]: EQ
+            Name [8:24-8:25]: i
+            Literal [8:29-8:31]: INT(69)
+          Call [8:37-8:45]: print
+            Name [8:43-8:44]: i

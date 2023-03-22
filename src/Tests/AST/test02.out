@@ -1,0 +1,8 @@
+Defs [1:1-1:40]
+  FunDef [1:1-1:40]: f
+    Parameter [1:9-1:20]: x
+      Atom [1:13-1:20]: LOG
+    Atom [1:25-1:32]: INT
+    Binary [1:35-1:40]: ADD
+      Name [1:35-1:36]: x
+      Name [1:39-1:40]: y

@@ -1,0 +1,1 @@
+fun f ( x : logical ) : integer = x + y

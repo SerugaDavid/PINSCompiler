@@ -1,0 +1,12 @@
+Defs [1:1-3:47]
+  VarDef [1:1-1:15]: x
+    Atom [1:8-1:15]: INT
+  TypeDef [2:1-2:19]: MyInt
+    Atom [2:12-2:19]: INT
+  FunDef [3:1-3:47]: f
+    Parameter [3:9-3:20]: x
+      Atom [3:13-3:20]: LOG
+    Array [3:25-3:43]
+      [10]
+      Atom [3:36-3:43]: INT
+    Literal [3:46-3:47]: INT(0)

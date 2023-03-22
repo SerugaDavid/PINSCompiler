@@ -18,9 +18,7 @@ import compiler.lexer.Position;
 import compiler.lexer.Symbol;
 import compiler.parser.ast.Ast;
 import compiler.parser.ast.def.*;
-import compiler.parser.ast.expr.Binary;
-import compiler.parser.ast.expr.Expr;
-import compiler.parser.ast.expr.Where;
+import compiler.parser.ast.expr.*;
 import compiler.parser.ast.type.Array;
 import compiler.parser.ast.type.Atom;
 import compiler.parser.ast.type.Type;
@@ -290,10 +288,15 @@ public class Parser {
         return expression;
     }
 
-    private Expr parseLogicalIORExpression() {
-        dump("logical_ior_expression -> logical_and_expression logical_ior_expression2");
-        Expr left = parseLogicalANDExpression();
-        Expr right = parseLogicalIORExpression2();
+    /**
+     * Method that creates a binary expression from two expressions and an operator.
+     * Also handles the case where the right expression is null. In that case, the left expression is returned.
+     * @param left left side of the binary expression
+     * @param right right side of the binary expression
+     * @param op operator of the binary expression
+     * @return binary expression
+     */
+    private Expr leftRightBinary(Expr left, Expr right, Binary.Operator op) {
         if (right == null)
             return left;
         return new Binary(
@@ -302,270 +305,463 @@ public class Parser {
                         right.position.end
                 ),
                 left,
-                Binary.Operator.OR,
+                op,
                 right
         );
     }
 
-    private Expr parseLogicalIORExpression2() {
+    private Expr parseLogicalIORExpression() {
+        dump("logical_ior_expression -> logical_and_expression logical_ior_expression2");
+        Expr left = parseLogicalANDExpression();
+        Expr expr = parseLogicalIORExpression2(left);
+        return expr;
+    }
+
+    private Expr parseLogicalIORExpression2(Expr left) {
         if (getSymbol().tokenType == OP_OR) {
             dump("logical_ior_expression2 -> | logical_and_expression logical_ior_expression2");
             skipSymbol();
-            Expr left = parseLogicalANDExpression();
-            Expr right = parseLogicalIORExpression2();
-            if (right == null)
-                return left;
-            return new Binary(
-                    new Position(
-                            left.position.start,
-                            right.position.end
-                    ),
-                    left,
-                    Binary.Operator.OR,
-                    right
-            );
+            Expr right = parseLogicalANDExpression();
+            left = leftRightBinary(left, right, Binary.Operator.OR);
+            Expr expr = parseLogicalIORExpression2(left);
+            return expr;
         } else
             dump("logical_ior_expression2 -> e");
-        return null;
+        return left;
     }
 
     private Expr parseLogicalANDExpression() {
         dump("logical_and_expression -> compare_expression logical_and_expression2");
-        parseCompareExpression();
-        parseLogicalANDExpression2();
-        return null;
+        Expr left = parseCompareExpression();
+        Expr expr = parseLogicalANDExpression2(left);
+        return expr;
     }
 
-    private void parseLogicalANDExpression2() {
+    private Expr parseLogicalANDExpression2(Expr left) {
         if (getSymbol().tokenType == OP_AND) {
             dump("logical_and_expression2 -> \"&\" compare_expression logical_and_expression2");
             skipSymbol();
-            parseCompareExpression();
-            parseLogicalANDExpression2();
+            Expr right = parseCompareExpression();
+            left = leftRightBinary(left, right, Binary.Operator.AND);
+            Expr expr = parseLogicalANDExpression2(left);
+            return expr;
         } else
             dump("logical_and_expression2 -> e");
+        return left;
     }
 
-    private void parseCompareExpression() {
+    private Expr parseCompareExpression() {
         dump("compare_expression -> additive_expression compare_expression2");
-        parseAdditiveExpression();
-        parseCompareExpression2();
+        Expr left = parseAdditiveExpression();
+        Expr expr = parseCompareExpression2(left);
+        return expr;
     }
 
-    private void parseCompareExpression2() {
+    private Expr parseCompareExpression2(Expr left) {
+        Binary.Operator op;
         switch (getSymbol().tokenType) {
-            case OP_EQ -> dump("compare_expression2 -> == additive_expression");
-            case OP_NEQ -> dump("compare_expression2 -> != additive_expression");
-            case OP_LEQ -> dump("compare_expression2 -> <= additive_expression");
-            case OP_GEQ -> dump("compare_expression2 -> >= additive_expression");
-            case OP_LT -> dump("compare_expression2 -> < additive_expression");
-            case OP_GT -> dump("compare_expression2 -> > additive_expression");
+            case OP_EQ -> {
+                dump("compare_expression2 -> == additive_expression");
+                op = Binary.Operator.EQ;
+            }
+            case OP_NEQ -> {
+                dump("compare_expression2 -> != additive_expression");
+                op = Binary.Operator.NEQ;
+            }
+            case OP_LEQ -> {
+                dump("compare_expression2 -> <= additive_expression");
+                op = Binary.Operator.LEQ;
+            }
+            case OP_GEQ -> {
+                dump("compare_expression2 -> >= additive_expression");
+                op = Binary.Operator.GEQ;
+            }
+            case OP_LT -> {
+                dump("compare_expression2 -> < additive_expression");
+                op = Binary.Operator.LT;
+            }
+            case OP_GT -> {
+                dump("compare_expression2 -> > additive_expression");
+                op = Binary.Operator.GT;
+            }
             default -> {
                 dump("compare_expression2 -> e");
-                return;
+                return left;
             }
         }
         skipSymbol();
-        parseAdditiveExpression();
+        Expr right = parseAdditiveExpression();
+        return leftRightBinary(left, right, op);
     }
 
-    private void parseAdditiveExpression() {
+    private Expr parseAdditiveExpression() {
         dump("additive_expression -> multiplicative_expression additive_expression2");
-        parseMultiplicativeExpression();
-        parseAdditiveExpression2();
+        Expr left = parseMultiplicativeExpression();
+        Expr expr = parseAdditiveExpression2(left);
+        return expr;
     }
 
-    private void parseAdditiveExpression2() {
+    private Expr parseAdditiveExpression2(Expr left) {
+        Binary.Operator op;
         switch (getSymbol().tokenType) {
-            case OP_ADD -> dump("additive_expression2 -> + multiplicative_expression additive_expression2");
-            case OP_SUB -> dump("additive_expression2 -> - multiplicative_expression additive_expression2");
+            case OP_ADD -> {
+                dump("additive_expression2 -> + multiplicative_expression additive_expression2");
+                op = Binary.Operator.ADD;
+            }
+            case OP_SUB -> {
+                dump("additive_expression2 -> - multiplicative_expression additive_expression2");
+                op = Binary.Operator.SUB;
+            }
             default -> {
                 dump("additive_expression2 -> e");
-                return;
+                return left;
             }
         }
         skipSymbol();
-        parseMultiplicativeExpression();
-        parseAdditiveExpression2();
+        Expr right = parseMultiplicativeExpression();
+        left = leftRightBinary(left, right, op);
+        Expr expr = parseAdditiveExpression2(left);
+        return expr;
     }
 
-    private void parseMultiplicativeExpression() {
+    private Expr parseMultiplicativeExpression() {
         dump("multiplicative_expression -> prefix_expression multiplicative_expression2");
-        parsePrefixExpression();
-        parseMultiplicativeExpression2();
+        Expr left = parsePrefixExpression();
+        Expr expr = parseMultiplicativeExpression2(left);
+        return expr;
     }
 
-    private void parseMultiplicativeExpression2() {
+    private Expr parseMultiplicativeExpression2(Expr left) {
+        Binary.Operator op;
         switch (getSymbol().tokenType) {
-            case OP_MUL -> dump("multiplicative_expression2 -> * prefix_expression multiplicative_expression2");
-            case OP_DIV -> dump("multiplicative_expression2 -> / prefix_expression multiplicative_expression2");
-            case OP_MOD -> dump("multiplicative_expression2 -> % prefix_expression multiplicative_expression2");
+            case OP_MUL -> {
+                dump("multiplicative_expression2 -> * prefix_expression multiplicative_expression2");
+                op = Binary.Operator.MUL;
+            }
+            case OP_DIV -> {
+                dump("multiplicative_expression2 -> / prefix_expression multiplicative_expression2");
+                op = Binary.Operator.DIV;
+            }
+            case OP_MOD -> {
+                dump("multiplicative_expression2 -> % prefix_expression multiplicative_expression2");
+                op = Binary.Operator.MOD;
+            }
             default -> {
                 dump("multiplicative_expression2 -> e");
-                return;
+                return left;
             }
         }
         skipSymbol();
-        parsePrefixExpression();
-        parseMultiplicativeExpression2();
+        Expr right = parsePrefixExpression();
+        left = leftRightBinary(left, right, op);
+        Expr expr = parseMultiplicativeExpression2(left);
+        return expr;
     }
 
-    private void parsePrefixExpression() {
+    private Expr parsePrefixExpression() {
+        Unary.Operator op;
         switch (getSymbol().tokenType) {
-            case OP_ADD -> dump("prefix_expression -> + prefix_expression");
-            case OP_SUB -> dump("prefix_expression -> - prefix_expression");
-            case OP_NOT -> dump("prefix_expression -> ! prefix_expression");
+            case OP_ADD -> {
+                dump("prefix_expression -> + prefix_expression");
+                op = Unary.Operator.ADD;
+            }
+            case OP_SUB -> {
+                dump("prefix_expression -> - prefix_expression");
+                op = Unary.Operator.SUB;
+            }
+            case OP_NOT -> {
+                dump("prefix_expression -> ! prefix_expression");
+                op = Unary.Operator.NOT;
+            }
             default -> {
                 dump("prefix_expression -> postfix_expression");
-                parsePostfixExpression();
-                return;
+                Expr expr = parsePostfixExpression();
+                return expr;
             }
         }
+        Position start = getSymbol().position;
         skipSymbol();
-        parsePrefixExpression();
+        Expr expr = parsePrefixExpression();
+        return new Unary(
+                new Position(start.start, expr.position.end),
+                expr,
+                op
+        );
     }
 
-    private void parsePostfixExpression() {
+    private Expr parsePostfixExpression() {
         dump("postfix_expression -> atom_expression postfix_expression2");
-        parseAtomExpression();
-        parsePostfixExpression2();
+        Expr left = parseAtomExpression();
+        Expr expr = parsePostfixExpression2(left);
+        return expr;
     }
 
-    private void parsePostfixExpression2() {
+    private Expr parsePostfixExpression2(Expr left) {
         if (getSymbol().tokenType == OP_LBRACKET) {
             dump("postfix_expression2 -> [ expression ] postfix_expression2");
             skipSymbol();
-            parseExpression();
+            Expr right = parseExpression();
             if (getSymbol().tokenType != OP_RBRACKET)
                 Report.error("PostfixExpression2\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: ']'");
+            Binary arr = new Binary(
+                    new Position(left.position.start, getSymbol().position.end),
+                    left,
+                    Binary.Operator.ARR,
+                    right
+            );
             skipSymbol();
-            parsePostfixExpression2();
+            return parsePostfixExpression2(arr);
         } else
             dump("postfix_expression2 -> e");
+        return left;
     }
 
-    private void parseAtomExpression() {
+    private Expr parseAtomExpression() {
         switch (getSymbol().tokenType) {
-            case C_LOGICAL -> dump("atom_expression -> log_constant");
-            case C_INTEGER -> dump("atom_expression -> int_constant");
-            case C_STRING -> dump("atom_expression -> str_constant");
+            case C_LOGICAL -> {
+                dump("atom_expression -> log_constant");
+                Literal logical = new Literal(
+                        getSymbol().position,
+                        getSymbol().lexeme,
+                        Atom.Type.LOG
+                );
+                skipSymbol();
+                return logical;
+            }
+            case C_INTEGER -> {
+                dump("atom_expression -> int_constant");
+                Literal integer = new Literal(
+                        getSymbol().position,
+                        getSymbol().lexeme,
+                        Atom.Type.INT
+                );
+                skipSymbol();
+                return integer;
+            }
+            case C_STRING -> {
+                dump("atom_expression -> str_constant");
+                Literal string = new Literal(
+                        getSymbol().position,
+                        getSymbol().lexeme,
+                        Atom.Type.STR
+                );
+                skipSymbol();
+                return string;
+            }
             case IDENTIFIER -> {
                 dump("atom_expression -> identifier atom_expression2");
+                Name id = new Name(
+                        getSymbol().position,
+                        getSymbol().lexeme
+                );
                 skipSymbol();
                 // tle morš bit pozorn na skip znaka
-                parseAtomExpression2();
+                return parseAtomExpression2(id);
             }
             case OP_LBRACE -> {
                 dump("atom_expression -> { atom_expression3 }");
+                Position start = getSymbol().position;
                 skipSymbol();
-                parseAtomExpression3();
-                if (getSymbol().tokenType != OP_RBRACE)
-                    Report.error("AtomExpression\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: '}'");
+                Expr expr = parseAtomExpression3(start);
+                // TODO: handle this brace
+//                if (getSymbol().tokenType != OP_RBRACE)
+//                    Report.error("AtomExpression\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: '}'");
+//                Position end = getSymbol().position;
+//                skipSymbol();
             }
             case OP_LPARENT -> {
                 dump("atom_expression -> ( expression )");
+                Position start = getSymbol().position;
                 skipSymbol();
-                parseExpressions();
+                Block exprs = parseExpressions();
                 if (getSymbol().tokenType != OP_RPARENT)
                     Report.error("AtomExpression\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: ')'");
+                Position end = getSymbol().position;
+                skipSymbol();
+                return new Block(
+                        new Position(start.start, end.end),
+                        exprs.expressions
+                );
             }
             default ->
                     Report.error("AtomExpression\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected:\nC_LOGICAL\nC_INTEGER\nC_STRING\nIDENTIFIER\nOP_LBRACE\nOP_LPARENT");
         }
-        skipSymbol();
+        return null;
     }
 
-    private void parseAtomExpression2() {
+    private Expr parseAtomExpression2(Name id) {
         if (getSymbol().tokenType == OP_LPARENT) {
             dump("atom_expression2 -> ( expressions )");
             skipSymbol();
-            parseExpressions();
+            Block expr = parseExpressions();
             if (getSymbol().tokenType != OP_RPARENT)
                 Report.error("AtomExpression2\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: ')'");
+            Call function = new Call(
+                    new Position(id.position.start, getSymbol().position.end),
+                    expr.expressions,
+                    id.name
+            );
+            skipSymbol();
+            return function;
         } else {
             dump("atom_expression2 -> e");
-            this.index--;
         }
+        return id;
     }
 
-    private void parseAtomExpression3() {
+    private Expr parseAtomExpression3(Position start) {
         switch (getSymbol().tokenType) {
             case KW_IF -> {
+                // TODO: nakoncu
                 dump("atom_expression3 -> if expression then expression atom_expression4");
                 skipSymbol();
-                parseExpression();
+                Expr condition = parseExpression();
                 if (getSymbol().tokenType != KW_THEN)
                     Report.error("AtomExpression3\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: KW_THEN");
                 skipSymbol();
-                parseExpression();
-                parseAtomExpression4();
+                Expr then = parseExpression();
+                IfThenElse ifThen = new IfThenElse(
+                        new Position(start.start, then.position.end),
+                        condition,
+                        then
+                );
+                return parseAtomExpression4(ifThen);
             }
             case KW_WHILE -> {
                 dump("atom_expression3 -> while expression : expression");
                 skipSymbol();
-                parseExpression();
+                Expr expr1 = parseExpression();
                 if (getSymbol().tokenType != OP_COLON)
                     Report.error("AtomExpression3\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: ':'");
                 skipSymbol();
-                parseExpression();
+                Expr expr2 = parseExpression();
+                if (getSymbol().tokenType != OP_RBRACE)
+                    Report.error("AtomExpression3\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: '}'");
+                Position end = getSymbol().position;
+                skipSymbol();
+                While whileExpr = new While(
+                        new Position(start.start, end.end),
+                        expr1,
+                        expr2
+                );
+                return whileExpr;
             }
             case KW_FOR -> {
                 dump("atom_expression3 -> for identifier = expression , expression , expression : expression");
                 skipSymbol();
                 if (getSymbol().tokenType != IDENTIFIER)
                     Report.error("AtomExpression3\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: IDENTIFIER");
+                Name counter = new Name(
+                        getSymbol().position,
+                        getSymbol().lexeme
+                );
                 skipSymbol();
                 if (getSymbol().tokenType != OP_ASSIGN)
                     Report.error("AtomExpression3\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: '='");
                 skipSymbol();
-                parseExpression();
+                Expr low = parseExpression();
                 if (getSymbol().tokenType != OP_COMMA)
                     Report.error("AtomExpression3\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: ','");
                 skipSymbol();
-                parseExpression();
+                Expr high = parseExpression();
                 if (getSymbol().tokenType != OP_COMMA)
                     Report.error("AtomExpression3\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: ','");
                 skipSymbol();
-                parseExpression();
+                Expr step = parseExpression();
                 if (getSymbol().tokenType != OP_COLON)
                     Report.error("AtomExpression3\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: ':'");
                 skipSymbol();
-                parseExpression();
+                Expr body = parseExpression();
+                if (getSymbol().tokenType != OP_RBRACE)
+                    Report.error("AtomExpression3\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: '}'");
+                Position end = getSymbol().position;
+                skipSymbol();
+                For forExpr = new For(
+                        new Position(start.start, end.end),
+                        counter,
+                        low,
+                        high,
+                        step,
+                        body
+                );
+                return forExpr;
             }
             default -> {
                 dump("atom_expression3 -> expression = expression");
-                parseExpression();
+                Expr id = parseExpression();
                 if (getSymbol().tokenType != OP_ASSIGN)
                     Report.error("AtomExpression3\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: '='");
                 skipSymbol();
-                parseExpression();
+                Expr value = parseExpression();
+                if (getSymbol().tokenType != OP_RBRACE)
+                    Report.error("AtomExpression3\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: '}'");
+                Position end = getSymbol().position;
+                skipSymbol();
+                Binary assing = new Binary(
+                        new Position(start.start, end.end),
+                        id,
+                        Binary.Operator.ASSIGN,
+                        value
+                );
+                return assing;
             }
         }
     }
 
-    private void parseAtomExpression4() {
+    private Expr parseAtomExpression4(IfThenElse ifThen) {
+        Expr elseExpr = null;
         if (getSymbol().tokenType == KW_ELSE) {
             dump("atom_expression4 -> else expression");
             skipSymbol();
-            parseExpression();
+            elseExpr = parseExpression();
         } else
             dump("atom_expression4 -> e");
+
+        if (getSymbol().tokenType != OP_RBRACE)
+            Report.error("AtomExpression3\n" + "Unexpected token: " + getSymbol().tokenType + "\nat: " + getSymbol().position + "\nExpected: '}'");
+        Position end = getSymbol().position;
+        skipSymbol();
+
+        if (elseExpr == null)
+            return new IfThenElse(
+                    new Position(ifThen.position.start, end.end),
+                    ifThen.condition,
+                    ifThen.thenExpression
+            );
+        else
+            return new IfThenElse(
+                    new Position(ifThen.position.start, end.end),
+                    ifThen.condition,
+                    ifThen.thenExpression,
+                    elseExpr
+            );
     }
 
-    private void parseExpressions() {
+    private Block parseExpressions() {
         dump("expressions -> expression expressions2");
-        parseExpression();
-        parseExpressions2();
+        Expr expr = parseExpression();
+        ArrayList<Expr> exprs = new ArrayList<>();
+        exprs.add(expr);
+        Block blockExprs = parseExpressions2(exprs);
+        return null;
     }
 
-    private void parseExpressions2() {
+    private Block parseExpressions2(ArrayList<Expr> exprs) {
         if (getSymbol().tokenType == OP_COMMA) {
             dump("expressions2 -> , expression expressions2");
             skipSymbol();
-            parseExpression();
-            parseExpressions2();
+            Expr expr = parseExpression();
+            exprs.add(expr);
+            return parseExpressions2(exprs);
         } else
             dump("expressions2 -> e");
+        return new Block(
+                new Position(
+                        exprs.get(0).position.start,
+                        exprs.get(exprs.size() - 1).position.end
+                ),
+                exprs.stream().toList()
+        );
     }
 
     private VarDef parseVariableDefinition(Position start) {

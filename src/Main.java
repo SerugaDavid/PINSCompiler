@@ -55,20 +55,20 @@ public class Main {
                 ? Optional.of(System.out)
                 : Optional.empty();
         var parser = new Parser(symbols, out);
-        /*var ast = */parser.parse();
+        var ast = parser.parse();
         if (cli.execPhase == Phase.SYN) {
             return;
         }
         /**
          * Abstraktna sintaksa.
          */
-        /*
+
         var prettyPrint = new PrettyPrintVisitor1(2, System.out);
         if (cli.dumpPhases.contains(Phase.AST)) {
             ast.accept(prettyPrint);
         }
         if (cli.execPhase == Phase.AST) {
             return;
-        }*/
+        }
     }
 }

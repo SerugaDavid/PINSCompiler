@@ -16,13 +16,10 @@ import java.util.Optional;
 import common.Report;
 import compiler.lexer.Position;
 import compiler.lexer.Symbol;
-import compiler.parser.ast.Ast;
+import compiler.parser.ast.*;
 import compiler.parser.ast.def.*;
 import compiler.parser.ast.expr.*;
-import compiler.parser.ast.type.Array;
-import compiler.parser.ast.type.Atom;
-import compiler.parser.ast.type.Type;
-import compiler.parser.ast.type.TypeName;
+import compiler.parser.ast.type.*;
 
 public class Parser {
     /**

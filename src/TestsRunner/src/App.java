@@ -1,20 +1,25 @@
+package TestsRunner.src;
+
 import ArgPar.Annotation.ParsableArgument;
 import ArgPar.Annotation.ParsableCommand;
 import ArgPar.Annotation.ParsableFlag;
 import ArgPar.Exception.ParseException;
 import ArgPar.Parser.ArgumentParser;
 
-import static CmdExecutor.CmdExecutor.*;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static TestsRunner.src.CmdExecutor.CmdExecutor.*;
 
 public class App {
     @ParsableCommand(commandName = "test", description = "PINS Compiler test tools")
@@ -40,6 +45,8 @@ public class App {
         }
 
         private void runTests() throws IOException, InterruptedException {
+            if (!pathToCompiler.endsWith("\\") && !pathToCompiler.endsWith("/")) pathToCompiler += "\\";
+
             removeDir(testsDir);
             mkdir(testsDir);
             compileCompiler();
@@ -156,52 +163,64 @@ public class App {
         }
 
         private void compileCompiler() throws IOException, InterruptedException {
-            var files = allJavaFiles();
-            compileJavaProject(files);
+            List<String> files = new ArrayList<>();
+            allJavaFiles(pathToCompiler, files);
+            compileJavaProject(files.toArray(String[]::new));
         }
 
-        private String[] allJavaFiles() throws IOException, InterruptedException {
-            var files = execute("find", pathToCompiler + "src/", "-type", "f", "-name", "*.java");
-            var lines = files.split("\n");
-            return lines;
+        private void allJavaFiles(String directoryName, List<String> files) {
+            File directory = new File(directoryName);
+            File[] fList = directory.listFiles();
+
+            if (fList != null) {
+                for (File file : fList) {
+                    if (file.isFile() && file.getName().endsWith(".java")) files.add(file.getAbsolutePath().trim());
+                    else if (file.isDirectory()) allJavaFiles(file.getAbsolutePath(), files);
+                }
+            }
         }
 
         private void compileJavaProject(String[] javaFiles) throws IOException, InterruptedException {
             var compileCodeCommand = new String[javaFiles.length + 4];
             compileCodeCommand[javaFiles.length + 0] = "-cp";
-            compileCodeCommand[javaFiles.length + 1] = ".:" + pathToCompiler + "lib/*";
+            compileCodeCommand[javaFiles.length + 1] = pathToCompiler + "lib/ArgPar-0.1.jar;";
             compileCodeCommand[javaFiles.length + 2] = "-d";
             compileCodeCommand[javaFiles.length + 3] = testsDir;
+
             for (int i = 0; i < javaFiles.length; i++) {
                 compileCodeCommand[i] = javaFiles[i];
             }
+
             execute("javac", compileCodeCommand);
         }
 
         private String runCode(String pathToInputFile, Optional<String[]> flags) throws IOException, InterruptedException {
-            final var libPath = testsDir + ":" + pathToCompiler + "lib/*";
+            final var libPath = pathToCompiler + "lib/ArgPar-0.1.jar;.test/;";
             final var program = "Main";
             String[] args;
             if (flags.isPresent()) {
-                var offset = 5;
+                var offset = 7;
                 args = new String[flags.get().length + offset];
                 args[0] = "-cp";
                 args[1] = libPath;
-                args[2] = program;
-                args[3] = "PINS";
-                args[4] = pathToInputFile;
+                args[2] = "-p";
+                args[3] = pathToCompiler + "src/";
+                args[4] = program;
+                args[5] = "PINS";
+                args[6] = pathToInputFile;
                 for (int i = 0; i < flags.get().length; i++) {
                     args[i+offset] = flags.get()[i];
                 }
             } else {
                 args = new String[] {"-cp", libPath, program, "PINS", pathToInputFile, "--test"};
             }
+
             var result = execute(true, "java", args);
             return result;
         }
     
         private void removeDir(String dir) throws IOException, InterruptedException {
-            execute("rm", "-rf", dir);
+            new File(dir).delete();
         }
 
         private int gradeForPerc(double perc) {

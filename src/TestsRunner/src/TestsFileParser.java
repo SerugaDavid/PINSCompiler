@@ -1,3 +1,5 @@
+package TestsRunner.src;
+
 import static java.util.Objects.requireNonNull;
 
 import java.io.BufferedReader;

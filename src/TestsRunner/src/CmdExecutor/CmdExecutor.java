@@ -1,4 +1,4 @@
-package CmdExecutor;
+package TestsRunner.src.CmdExecutor;
 
 import java.io.BufferedReader;
 import java.io.IOException;

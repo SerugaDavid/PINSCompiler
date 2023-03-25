@@ -31,7 +31,7 @@ public class PINS {
      * Faza, ki se bo izvedla nazadnje.
      */
     @ParsableOption(name = "--exec")
-    public Phase execPhase = Phase.AST;
+    public Phase execPhase = Phase.NAME;
 
     @ParsableOption(name = "--memory")
     public int memory = 1024;

@@ -221,20 +221,29 @@ public class NameChecker implements Visitor {
 
         // check type definition
         if (funDef.type instanceof TypeName) {
-            Optional<Def> def = this.symbolTable.definitionFor(((TypeName) funDef.type).identifier);
-            if (def.isEmpty()) {
+            Optional<Def> opDef = this.symbolTable.definitionFor(((TypeName) funDef.type).identifier);
+            if (opDef.isEmpty()) {
                 Report.error(funDef.type.position, "Function type '" + ((TypeName) funDef.type).identifier + "' not defined for function '" + funDef.name + "'");
             }
-            this.definitions.store(def.get(), funDef);
+            Def def = opDef.get();
+            if (!(def instanceof TypeDef)) {
+                Report.error(funDef.type.position, "Function type '" + ((TypeName) funDef.type).identifier + "' at: " + funDef.type.position + " is not a valid type");
+            }
+            this.definitions.store(def, funDef);
         }
 
         // check parameter type definitions
         for (Parameter parameter: funDef.parameters) {
             if (parameter.type instanceof TypeName) {
-                Optional<Def> def = this.symbolTable.definitionFor(((TypeName) parameter.type).identifier);
-                if (def.isEmpty()) {
+                Optional<Def> opDef = this.symbolTable.definitionFor(((TypeName) parameter.type).identifier);
+                if (opDef.isEmpty()) {
                     Report.error(parameter.type.position, "Parameter type '" + ((TypeName) parameter.type).identifier + "' not defined for parameter '" + parameter.name + "' in function '" + funDef.name + "'");
                 }
+                Def def = opDef.get();
+                if (!(def instanceof TypeDef)) {
+                    Report.error(parameter.type.position, "Parameter type '" + ((TypeName) parameter.type).identifier + "' at: " + parameter.type.position + " is not a valid type");
+                }
+                this.definitions.store(def, parameter);
             }
         }
 
@@ -262,11 +271,15 @@ public class NameChecker implements Visitor {
 
         // check type definition
         if (typeDef.type instanceof TypeName) {
-            Optional<Def> def = this.symbolTable.definitionFor(((TypeName) typeDef.type).identifier);
-            if (def.isEmpty()) {
+            Optional<Def> opDef = this.symbolTable.definitionFor(((TypeName) typeDef.type).identifier);
+            if (opDef.isEmpty()) {
                 Report.error(typeDef.type.position, "Type type '" + ((TypeName) typeDef.type).identifier + "' not defined for type '" + typeDef.name + "'");
             }
-            this.definitions.store(def.get(), typeDef);
+            Def def = opDef.get();
+            if (!(def instanceof TypeDef)) {
+                Report.error(typeDef.type.position, "Type type '" + ((TypeName) typeDef.type).identifier + "' at: " + typeDef.type.position + " is not a valid type");
+            }
+            this.definitions.store(def, typeDef);
         }
     }
 
@@ -279,11 +292,15 @@ public class NameChecker implements Visitor {
 
         // check type definition
         if (varDef.type instanceof TypeName) {
-            Optional<Def> def = this.symbolTable.definitionFor(((TypeName) varDef.type).identifier);
-            if (def.isEmpty()) {
+            Optional<Def> opDef = this.symbolTable.definitionFor(((TypeName) varDef.type).identifier);
+            if (opDef.isEmpty()) {
                 Report.error(varDef.type.position, "Variable type '" + ((TypeName) varDef.type).identifier + "' not defined for variable '" + varDef.name + "'");
             }
-            this.definitions.store(def.get(), varDef);
+            Def def = opDef.get();
+            if (!(def instanceof TypeDef)) {
+                Report.error(varDef.type.position, "Variable type '" + ((TypeName) varDef.type).identifier + "' at: " + varDef.type.position + " is not a valid type");
+            }
+            this.definitions.store(def, varDef);
         }
     }
 

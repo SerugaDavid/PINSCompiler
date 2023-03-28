@@ -240,7 +240,7 @@ public class NameChecker implements Visitor {
             if (!(def instanceof TypeDef)) {
                 Report.error(funDef.type.position, "Function type '" + ((TypeName) funDef.type).identifier + "' at: " + funDef.type.position + " is not a valid type");
             }
-            this.definitions.store(def, funDef);
+            this.definitions.store(def, funDef.type);
         }
 
         // check parameter type definitions
@@ -254,7 +254,7 @@ public class NameChecker implements Visitor {
                 if (!(def instanceof TypeDef)) {
                     Report.error(parameter.type.position, "Parameter type '" + ((TypeName) parameter.type).identifier + "' at: " + parameter.type.position + " is not a valid type");
                 }
-                this.definitions.store(def, parameter);
+                this.definitions.store(def, parameter.type);
             }
         }
 
@@ -290,7 +290,7 @@ public class NameChecker implements Visitor {
             if (!(def instanceof TypeDef)) {
                 Report.error(typeDef.type.position, "Type type '" + ((TypeName) typeDef.type).identifier + "' at: " + typeDef.type.position + " is not a valid type");
             }
-            this.definitions.store(def, typeDef);
+            this.definitions.store(def, typeDef.type);
         }
     }
 
@@ -311,7 +311,7 @@ public class NameChecker implements Visitor {
             if (!(def instanceof TypeDef)) {
                 Report.error(varDef.type.position, "Variable type '" + ((TypeName) varDef.type).identifier + "' at: " + varDef.type.position + " is not a valid type");
             }
-            this.definitions.store(def, varDef);
+            this.definitions.store(def, varDef.type);
         }
     }
 

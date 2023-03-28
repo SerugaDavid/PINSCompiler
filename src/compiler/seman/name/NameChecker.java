@@ -231,31 +231,11 @@ public class NameChecker implements Visitor {
          */
 
         // check type definition
-        if (funDef.type instanceof TypeName) {
-            Optional<Def> opDef = this.symbolTable.definitionFor(((TypeName) funDef.type).identifier);
-            if (opDef.isEmpty()) {
-                Report.error(funDef.type.position, "Function type '" + ((TypeName) funDef.type).identifier + "' not defined for function '" + funDef.name + "'");
-            }
-            Def def = opDef.get();
-            if (!(def instanceof TypeDef)) {
-                Report.error(funDef.type.position, "Function type '" + ((TypeName) funDef.type).identifier + "' at: " + funDef.type.position + " is not a valid type");
-            }
-            this.definitions.store(def, funDef.type);
-        }
+        funDef.type.accept(this);
 
         // check parameter type definitions
         for (Parameter parameter: funDef.parameters) {
-            if (parameter.type instanceof TypeName) {
-                Optional<Def> opDef = this.symbolTable.definitionFor(((TypeName) parameter.type).identifier);
-                if (opDef.isEmpty()) {
-                    Report.error(parameter.type.position, "Parameter type '" + ((TypeName) parameter.type).identifier + "' not defined for parameter '" + parameter.name + "' in function '" + funDef.name + "'");
-                }
-                Def def = opDef.get();
-                if (!(def instanceof TypeDef)) {
-                    Report.error(parameter.type.position, "Parameter type '" + ((TypeName) parameter.type).identifier + "' at: " + parameter.type.position + " is not a valid type");
-                }
-                this.definitions.store(def, parameter.type);
-            }
+            parameter.type.accept(this);
         }
 
         // tle se ga rekurzivno skustiš in pohendlaš te nove scope
@@ -281,17 +261,7 @@ public class NameChecker implements Visitor {
          */
 
         // check type definition
-        if (typeDef.type instanceof TypeName) {
-            Optional<Def> opDef = this.symbolTable.definitionFor(((TypeName) typeDef.type).identifier);
-            if (opDef.isEmpty()) {
-                Report.error(typeDef.type.position, "Type type '" + ((TypeName) typeDef.type).identifier + "' not defined for type '" + typeDef.name + "'");
-            }
-            Def def = opDef.get();
-            if (!(def instanceof TypeDef)) {
-                Report.error(typeDef.type.position, "Type type '" + ((TypeName) typeDef.type).identifier + "' at: " + typeDef.type.position + " is not a valid type");
-            }
-            this.definitions.store(def, typeDef.type);
-        }
+        typeDef.type.accept(this);
     }
 
     @Override
@@ -302,17 +272,7 @@ public class NameChecker implements Visitor {
          */
 
         // check type definition
-        if (varDef.type instanceof TypeName) {
-            Optional<Def> opDef = this.symbolTable.definitionFor(((TypeName) varDef.type).identifier);
-            if (opDef.isEmpty()) {
-                Report.error(varDef.type.position, "Variable type '" + ((TypeName) varDef.type).identifier + "' not defined for variable '" + varDef.name + "'");
-            }
-            Def def = opDef.get();
-            if (!(def instanceof TypeDef)) {
-                Report.error(varDef.type.position, "Variable type '" + ((TypeName) varDef.type).identifier + "' at: " + varDef.type.position + " is not a valid type");
-            }
-            this.definitions.store(def, varDef.type);
-        }
+        varDef.type.accept(this);
     }
 
     @Override
@@ -328,9 +288,10 @@ public class NameChecker implements Visitor {
     public void visit(Array array) {
         /**
          * Array type
-         * IDK if this is needed
-         * Checks made in definitions
+         * Visit the type of the array
          */
+
+        array.type.accept(this);
     }
 
     @Override
@@ -338,7 +299,7 @@ public class NameChecker implements Visitor {
         /**
          * Atom type
          * IDK if this is needed
-         * Checks made in definitions
+         * Checks made in TypeName visitor
          */
     }
 
@@ -346,8 +307,19 @@ public class NameChecker implements Visitor {
     public void visit(TypeName name) {
         /**
          * Type name
-         * IDK if this is needed
-         * Checks made in definitions
+         * Get definition from symbol table
+         * Check if it exists
+         * Check if it is a type
          */
+
+        Optional<Def> opDef = this.symbolTable.definitionFor(name.identifier);
+        if (opDef.isEmpty()) {
+            Report.error(name.position, "Type '" + name.identifier + "' at: " + name.position + "not defined");
+        }
+        Def def = opDef.get();
+        if (!(def instanceof TypeDef)) {
+            Report.error(name.position, "Type '" + name.identifier + "' at: " + name.position + " is not a valid type");
+        }
+        this.definitions.store(def, name);
     }
 }

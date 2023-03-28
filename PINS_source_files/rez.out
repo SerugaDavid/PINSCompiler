@@ -1,6 +1,546 @@
-Defs [1:1-2:18]
-  VarDef [1:1-1:12]: x
-    TypeName [1:9-1:12]: int
-      # defined at: [2:1-2:18]
-  TypeDef [2:1-2:18]: int
-    Atom [2:11-2:18]: INT
+Defs [5:1-87:47]
+  TypeDef [5:1-5:15]: x
+    Atom [5:8-5:15]: INT
+  TypeDef [6:1-6:14]: y
+    Atom [6:8-6:14]: STR
+  TypeDef [7:1-7:15]: z
+    Atom [7:8-7:15]: LOG
+  TypeDef [8:1-8:17]: i
+    TypeName [8:8-8:17]: blablabla
+      # defined at: [10:1-10:23]
+  TypeDef [9:1-9:41]: j
+    Array [9:8-9:41]
+      [10]
+      Array [9:16-9:41]
+        [15]
+        Array [9:24-9:41]
+          [20]
+          TypeName [9:32-9:41]: blablabla
+            # defined at: [10:1-10:23]
+  TypeDef [10:1-10:23]: blablabla
+    Atom [10:16-10:23]: INT
+  TypeDef [11:1-11:22]: blabla
+    TypeName [11:13-11:22]: blablabla
+      # defined at: [10:1-10:23]
+  TypeDef [12:1-12:18]: void
+    Atom [12:11-12:18]: LOG
+  VarDef [15:1-15:14]: k
+    Atom [15:8-15:14]: STR
+  VarDef [15:16-15:30]: l
+    Atom [15:23-15:30]: INT
+  VarDef [15:32-15:46]: q
+    Atom [15:39-15:46]: LOG
+  VarDef [15:48-15:61]: m
+    TypeName [15:55-15:61]: blabla
+      # defined at: [11:1-11:22]
+  VarDef [15:63-15:94]: n
+    Array [15:70-15:94]
+      [69]
+      Array [15:78-15:94]
+        [420]
+        Atom [15:88-15:94]: STR
+  FunDef [19:1-57:2]: firstfunction
+    Parameter [19:19-19:29]: x
+      Atom [19:22-19:29]: INT
+    Parameter [19:31-19:40]: y
+      Atom [19:34-19:40]: STR
+    Parameter [19:42-19:52]: z
+      Atom [19:45-19:52]: LOG
+    Parameter [19:54-19:80]: n
+      Array [19:57-19:80]
+        [69]
+        Array [19:65-19:80]
+          [420]
+          Atom [19:74-19:80]: STR
+    Atom [19:83-19:90]: INT
+    Where [20:5-57:2]
+      Defs [55:9-56:86]
+        VarDef [55:9-55:22]: i
+          Atom [55:15-55:22]: INT
+        VarDef [55:24-55:38]: a
+          Atom [55:31-55:38]: LOG
+        VarDef [55:40-55:54]: j
+          Atom [55:47-55:54]: INT
+        FunDef [55:56-56:86]: secondfunction
+          Parameter [55:75-55:85]: x
+            Atom [55:78-55:85]: INT
+          Atom [55:87-55:94]: INT
+          Where [55:97-56:86]
+            Defs [56:1-56:85]
+              FunDef [56:1-56:85]: thirdfunction
+                Parameter [56:19-56:28]: y
+                  Atom [56:22-56:28]: STR
+                Array [56:30-56:44]
+                  [10]
+                  Atom [56:38-56:44]: STR
+                Where [56:47-56:85]
+                  Defs [56:68-56:84]
+                    VarDef [56:68-56:84]: xyz
+                      Atom [56:77-56:84]: INT
+                  Block [56:47-56:60]
+                    Binary [56:48-56:59]: ASSIGN
+                      Binary [56:49-56:54]: MUL
+                        Literal [56:49-56:51]: INT(10)
+                        Literal [56:52-56:54]: INT(20)
+                      Name [56:55-56:58]: xyz
+                        # defined at: [56:68-56:84]
+            Binary [55:97-55:116]: OR
+              Binary [55:97-55:102]: ADD
+                Literal [55:97-55:99]: INT(10)
+                Literal [55:100-55:102]: INT(20)
+              Binary [55:103-55:116]: AND
+                Binary [55:103-55:108]: SUB
+                  Literal [55:103-55:105]: INT(30)
+                  Literal [55:106-55:108]: INT(40)
+                Binary [55:109-55:116]: EQ
+                  Literal [55:109-55:112]: INT(123)
+                  Literal [55:114-55:116]: INT(20)
+      Block [20:5-54:6]
+        For [20:7-29:15]
+          Name [20:12-20:13]: i
+            # defined at: [55:9-55:22]
+          Literal [20:16-20:17]: INT(1)
+          Binary [20:19-20:27]: LEQ
+            Name [20:19-20:20]: i
+              # defined at: [55:9-55:22]
+            Literal [20:24-20:27]: INT(100)
+          Binary [20:29-20:40]: ASSIGN
+            Name [20:30-20:31]: i
+              # defined at: [55:9-55:22]
+            Binary [20:34-20:39]: ADD
+              Name [20:34-20:35]: i
+                # defined at: [55:9-55:22]
+              Literal [20:38-20:39]: INT(1)
+          While [21:9-29:10]
+            Binary [22:19-22:28]: GT
+              Name [22:19-22:20]: j
+                # defined at: [55:40-55:54]
+              Block [22:23-22:28]
+                Unary [22:24-22:27]: SUB
+                  Literal [22:25-22:27]: INT(10)
+            IfThenElse [22:30-27:14]
+              Binary [23:20-23:86]: NEQ
+                Binary [23:20-23:79]: SUB
+                  Binary [23:20-23:60]: SUB
+                    Binary [23:20-23:44]: ADD
+                      Binary [23:20-23:39]: ADD
+                        Binary [23:20-23:34]: ADD
+                          Binary [23:20-23:29]: MUL
+                            Name [23:20-23:21]: j
+                              # defined at: [55:40-55:54]
+                            Block [23:24-23:29]
+                              Unary [23:25-23:28]: SUB
+                                Literal [23:26-23:28]: INT(10)
+                          Literal [23:32-23:34]: INT(20)
+                        Literal [23:37-23:39]: INT(30)
+                      Literal [23:42-23:44]: INT(10)
+                    Binary [23:47-23:60]: MOD
+                      Binary [23:47-23:54]: DIV
+                        Literal [23:47-23:49]: INT(40)
+                        Literal [23:52-23:54]: INT(50)
+                      Literal [23:57-23:60]: INT(100)
+                  Block [23:62-23:79]
+                    Unary [23:63-23:78]: SUB
+                      Block [23:64-23:78]
+                        Unary [23:65-23:77]: SUB
+                          Block [23:66-23:77]
+                            Unary [23:67-23:76]: SUB
+                              Block [23:68-23:76]
+                                Unary [23:69-23:75]: SUB
+                                  Block [23:70-23:75]
+                                    Unary [23:71-23:74]: ADD
+                                      Literal [23:72-23:74]: INT(10)
+                Literal [23:83-23:86]: INT(123)
+              Literal [24:21-24:23]: INT(12)
+              Call [26:21-26:51]: firstfunction
+                # defined at: [19:1-57:2]
+                Literal [26:35-26:38]: INT(123)
+                Unary [26:40-26:44]: SUB
+                  Literal [26:41-26:44]: INT(234)
+                Unary [26:46-26:50]: ADD
+                  Literal [26:47-26:50]: INT(456)
+        Binary [31:9-35:75]: OR
+          Binary [31:9-34:51]: OR
+            Binary [31:9-34:39]: OR
+              Binary [31:9-34:28]: OR
+                Binary [31:9-34:18]: OR
+                  Binary [31:9-33:97]: OR
+                    Binary [31:9-31:53]: OR
+                      Binary [31:9-31:26]: OR
+                        Binary [31:9-31:21]: AND
+                          Literal [31:9-31:13]: LOG(true)
+                          Literal [31:16-31:21]: LOG(false)
+                        Literal [31:24-31:26]: INT(10)
+                      Binary [31:29-31:53]: AND
+                        Literal [31:29-31:49]: STR(danes je lep dan')
+                        Name [31:52-31:53]: i
+                          # defined at: [55:9-55:22]
+                    Binary [31:56-33:97]: GEQ
+                      Call [31:56-31:80]: firstfunction
+                        # defined at: [19:1-57:2]
+                        Name [31:70-31:71]: i
+                          # defined at: [55:9-55:22]
+                        Binary [31:73-31:79]: ADD
+                          Name [31:73-31:74]: x
+                            # defined at: [19:19-19:29]
+                          Literal [31:77-31:79]: INT(10)
+                      Binary [33:9-33:97]: ADD
+                        Binary [33:9-33:68]: SUB
+                          Binary [33:9-33:59]: SUB
+                            Binary [33:9-33:26]: SUB
+                              Unary [33:9-33:12]: ADD
+                                Literal [33:10-33:12]: INT(10)
+                              Binary [33:15-33:26]: MUL
+                                Unary [33:15-33:18]: SUB
+                                  Literal [33:16-33:18]: INT(20)
+                                Unary [33:21-33:26]: NOT
+                                  Literal [33:22-33:26]: LOG(true)
+                            Binary [33:29-33:59]: DIV
+                              Unary [33:29-33:35]: NOT
+                                Literal [33:30-33:35]: LOG(false)
+                              Block [33:38-33:59]
+                                Name [33:39-33:40]: j
+                                  # defined at: [55:40-55:54]
+                                Literal [33:42-33:46]: STR(ha)
+                                Literal [33:48-33:52]: STR(ne)
+                                Literal [33:54-33:58]: STR(da)
+                          Binary [33:62-33:68]: ASSIGN
+                            Name [33:63-33:64]: x
+                              # defined at: [19:19-19:29]
+                            Literal [33:65-33:67]: INT(10)
+                        Binary [33:71-33:97]: ASSIGN
+                          Binary [33:72-33:77]: SUB
+                            Binary [33:72-33:75]: ADD
+                              Name [33:72-33:73]: y
+                                # defined at: [19:31-19:40]
+                              Name [33:74-33:75]: x
+                                # defined at: [19:19-19:29]
+                            Name [33:76-33:77]: z
+                              # defined at: [19:42-19:52]
+                          Binary [33:80-33:96]: SUB
+                            Binary [33:80-33:88]: MUL
+                              Literal [33:80-33:81]: INT(5)
+                              Literal [33:84-33:88]: LOG(true)
+                            Literal [33:91-33:96]: LOG(false)
+                  Binary [34:11-34:18]: GT
+                    Name [34:11-34:12]: i
+                      # defined at: [55:9-55:22]
+                    Binary [34:15-34:18]: ADD
+                      Name [34:15-34:16]: j
+                        # defined at: [55:40-55:54]
+                      Literal [34:17-34:18]: INT(3)
+                Binary [34:21-34:28]: LT
+                  Name [34:21-34:22]: j
+                    # defined at: [55:40-55:54]
+                  Binary [34:25-34:28]: SUB
+                    Name [34:25-34:26]: j
+                      # defined at: [55:40-55:54]
+                    Literal [34:27-34:28]: INT(2)
+              Binary [34:31-34:39]: GEQ
+                Name [34:31-34:32]: i
+                  # defined at: [55:9-55:22]
+                Binary [34:36-34:39]: MUL
+                  Name [34:36-34:37]: i
+                    # defined at: [55:9-55:22]
+                  Literal [34:38-34:39]: INT(3)
+            Binary [34:43-34:51]: LEQ
+              Name [34:43-34:44]: i
+                # defined at: [55:9-55:22]
+              Binary [34:48-34:51]: DIV
+                Name [34:48-34:49]: j
+                  # defined at: [55:40-55:54]
+                Literal [34:50-34:51]: INT(7)
+          Binary [34:54-35:75]: AND
+            Binary [34:54-34:72]: AND
+              Binary [34:54-34:66]: AND
+                Binary [34:54-34:60]: NEQ
+                  Name [34:54-34:55]: j
+                    # defined at: [55:40-55:54]
+                  Name [34:59-34:60]: j
+                    # defined at: [55:40-55:54]
+                Literal [34:63-34:66]: STR(a)
+              Literal [34:69-34:72]: STR(b)
+            Binary [34:75-35:75]: EQ
+              Binary [34:75-34:84]: DIV
+                Literal [34:75-34:78]: STR(a)
+                Literal [34:81-34:84]: STR(a)
+              Binary [34:88-35:75]: ADD
+                Binary [34:88-35:65]: SUB
+                  Binary [34:88-35:43]: SUB
+                    Binary [34:88-35:38]: SUB
+                      Binary [34:88-35:33]: SUB
+                        Binary [34:88-35:28]: ADD
+                          Binary [34:88-34:99]: ADD
+                            Binary [34:88-34:94]: ADD
+                              Literal [34:88-34:89]: INT(1)
+                              Literal [34:92-34:94]: INT(10)
+                            Literal [34:97-34:99]: INT(20)
+                          Binary [34:102-35:28]: MUL
+                            Binary [34:102-35:23]: MUL
+                              Binary [34:102-35:18]: MUL
+                                Binary [34:102-35:13]: MUL
+                                  Binary [34:102-34:119]: DIV
+                                    Binary [34:102-34:114]: DIV
+                                      Binary [34:102-34:109]: DIV
+                                        Literal [34:102-34:104]: INT(30)
+                                        Literal [34:107-34:109]: INT(40)
+                                      Literal [34:112-34:114]: INT(50)
+                                    Literal [34:117-34:119]: INT(60)
+                                  Literal [35:11-35:13]: INT(10)
+                                Literal [35:16-35:18]: INT(20)
+                              Literal [35:21-35:23]: INT(30)
+                            Literal [35:26-35:28]: INT(40)
+                        Literal [35:31-35:33]: INT(50)
+                      Literal [35:36-35:38]: INT(60)
+                    Literal [35:41-35:43]: INT(80)
+                  Binary [35:46-35:65]: MOD
+                    Binary [35:46-35:61]: MOD
+                      Binary [35:46-35:57]: MOD
+                        Binary [35:46-35:53]: MOD
+                          Literal [35:46-35:48]: INT(90)
+                          Literal [35:52-35:53]: INT(4)
+                        Literal [35:56-35:57]: INT(6)
+                      Literal [35:60-35:61]: INT(7)
+                    Literal [35:64-35:65]: INT(8)
+                Unary [35:67-35:75]: ADD
+                  Unary [35:68-35:75]: ADD
+                    Unary [35:69-35:75]: ADD
+                      Unary [35:70-35:75]: ADD
+                        Unary [35:71-35:75]: ADD
+                          Unary [35:72-35:75]: ADD
+                            Literal [35:73-35:75]: INT(10)
+        IfThenElse [37:9-41:10]
+          Binary [38:16-38:65]: GT
+            Literal [38:16-38:21]: STR(abc)
+            Binary [38:24-38:65]: ADD
+              Binary [38:24-38:59]: ADD
+                Binary [38:24-38:54]: SUB
+                  Binary [38:24-38:49]: ADD
+                    Binary [38:24-38:34]: SUB
+                      Literal [38:24-38:29]: STR(abc)
+                      Literal [38:32-38:34]: INT(10)
+                    Binary [38:37-38:49]: DIV
+                      Binary [38:37-38:44]: MUL
+                        Literal [38:37-38:39]: INT(10)
+                        Literal [38:42-38:44]: INT(10)
+                      Literal [38:47-38:49]: INT(10)
+                  Literal [38:52-38:54]: INT(10)
+                Literal [38:57-38:59]: INT(10)
+              Unary [38:62-38:65]: SUB
+                Literal [38:63-38:65]: INT(10)
+          Call [40:21-40:54]: firstfunction
+            # defined at: [19:1-57:2]
+            Literal [40:35-40:53]: STR(danes je lep dan)
+        For [43:9-53:10]
+          Name [44:13-44:14]: i
+            # defined at: [55:9-55:22]
+          While [45:13-47:14]
+            Name [46:23-46:24]: j
+              # defined at: [55:40-55:54]
+            Block [46:26-46:34]
+              Binary [46:27-46:33]: LT
+                Name [46:27-46:28]: j
+                  # defined at: [55:40-55:54]
+                Literal [46:31-46:33]: INT(10)
+          IfThenElse [48:17-50:18]
+            Binary [49:22-49:35]: GEQ
+              Binary [49:22-49:28]: MUL
+                Name [49:22-49:23]: a
+                  # defined at: [55:24-55:38]
+                Literal [49:26-49:28]: INT(10)
+              Literal [49:32-49:35]: INT(100)
+            Binary [49:41-49:53]: ASSIGN
+              Name [49:42-49:43]: a
+                # defined at: [55:24-55:38]
+              Binary [49:46-49:52]: SUB
+                Name [49:46-49:47]: a
+                  # defined at: [55:24-55:38]
+                Literal [49:50-49:52]: INT(10)
+            Literal [49:59-49:60]: INT(0)
+          For [51:21-51:79]
+            Name [51:27-51:28]: j
+              # defined at: [55:40-55:54]
+            Literal [51:31-51:32]: INT(1)
+            Binary [51:34-51:40]: LT
+              Name [51:34-51:35]: j
+                # defined at: [55:40-55:54]
+              Literal [51:38-51:40]: INT(10)
+            Binary [51:42-51:49]: ASSIGN
+              Name [51:43-51:44]: j
+                # defined at: [55:40-55:54]
+              Binary [51:45-51:48]: MUL
+                Name [51:45-51:46]: j
+                  # defined at: [55:40-55:54]
+                Literal [51:47-51:48]: INT(2)
+            Call [51:51-51:77]: firstfunction
+              # defined at: [19:1-57:2]
+              Literal [51:65-51:76]: STR(blablabla)
+          Binary [52:25-52:55]: ASSIGN
+            Binary [52:26-52:49]: ARR
+              Binary [52:26-52:39]: ARR
+                Name [52:26-52:27]: a
+                  # defined at: [55:24-55:38]
+                Binary [52:28-52:38]: SUB
+                  Binary [52:28-52:32]: ADD
+                    Name [52:28-52:29]: i
+                      # defined at: [55:9-55:22]
+                    Literal [52:30-52:32]: INT(10)
+                  Binary [52:33-52:38]: MUL
+                    Literal [52:33-52:35]: INT(20)
+                    Literal [52:36-52:38]: INT(30)
+              Binary [52:40-52:48]: SUB
+                Binary [52:40-52:44]: SUB
+                  Name [52:40-52:41]: j
+                    # defined at: [55:40-55:54]
+                  Literal [52:42-52:44]: INT(10)
+                Literal [52:45-52:48]: INT(203)
+            Literal [52:52-52:54]: INT(12)
+  FunDef [59:1-82:2]: partition
+    Parameter [59:15-59:39]: stevila
+      Array [59:24-59:39]
+        [10]
+        Atom [59:32-59:39]: INT
+    Parameter [59:41-59:55]: begin
+      Atom [59:48-59:55]: INT
+    Parameter [59:57-59:69]: end
+      Atom [59:62-59:69]: INT
+    Atom [59:72-59:79]: INT
+    Where [59:82-82:2]
+      Defs [78:5-81:19]
+        VarDef [78:5-78:26]: swapTemp
+          Atom [78:19-78:26]: INT
+        VarDef [79:5-79:23]: pivot
+          Atom [79:16-79:23]: INT
+        VarDef [80:5-80:19]: i
+          Atom [80:12-80:19]: INT
+        VarDef [81:5-81:19]: j
+          Atom [81:12-81:19]: INT
+      Block [59:82-77:2]
+        Binary [60:5-60:27]: ASSIGN
+          Name [60:6-60:11]: pivot
+            # defined at: [79:5-79:23]
+          Binary [60:14-60:26]: ARR
+            Name [60:14-60:21]: stevila
+              # defined at: [59:15-59:39]
+            Name [60:22-60:25]: end
+              # defined at: [59:57-59:69]
+        Binary [61:5-61:22]: ASSIGN
+          Name [61:6-61:7]: i
+            # defined at: [80:5-80:19]
+          Block [61:10-61:21]
+            Binary [61:11-61:20]: SUB
+              Name [61:11-61:16]: begin
+                # defined at: [59:41-59:55]
+              Literal [61:19-61:20]: INT(1)
+        For [63:5-70:6]
+          Name [63:11-63:12]: j
+            # defined at: [81:5-81:19]
+          Name [63:15-63:20]: begin
+            # defined at: [59:41-59:55]
+          Binary [63:22-63:29]: LT
+            Name [63:22-63:23]: j
+              # defined at: [81:5-81:19]
+            Name [63:26-63:29]: end
+              # defined at: [59:57-59:69]
+          Binary [63:31-63:42]: ASSIGN
+            Name [63:32-63:33]: j
+              # defined at: [81:5-81:19]
+            Binary [63:36-63:41]: ADD
+              Name [63:36-63:37]: j
+                # defined at: [81:5-81:19]
+              Literal [63:40-63:41]: INT(1)
+          IfThenElse [64:9-69:10]
+            Binary [64:14-64:33]: LEQ
+              Binary [64:14-64:24]: ARR
+                Name [64:14-64:21]: stevila
+                  # defined at: [59:15-59:39]
+                Name [64:22-64:23]: j
+                  # defined at: [81:5-81:19]
+              Name [64:28-64:33]: pivot
+                # defined at: [79:5-79:23]
+            Block [65:13-68:37]
+              Binary [65:14-65:25]: ASSIGN
+                Name [65:15-65:16]: i
+                  # defined at: [80:5-80:19]
+                Binary [65:19-65:24]: ADD
+                  Name [65:19-65:20]: i
+                    # defined at: [80:5-80:19]
+                  Literal [65:23-65:24]: INT(1)
+              Binary [66:13-66:36]: ASSIGN
+                Name [66:14-66:22]: swapTemp
+                  # defined at: [78:5-78:26]
+                Binary [66:25-66:35]: ARR
+                  Name [66:25-66:32]: stevila
+                    # defined at: [59:15-59:39]
+                  Name [66:33-66:34]: j
+                    # defined at: [81:5-81:19]
+              Binary [67:13-67:38]: ASSIGN
+                Binary [67:14-67:24]: ARR
+                  Name [67:14-67:21]: stevila
+                    # defined at: [59:15-59:39]
+                  Name [67:22-67:23]: i
+                    # defined at: [80:5-80:19]
+                Binary [67:27-67:37]: ARR
+                  Name [67:27-67:34]: stevila
+                    # defined at: [59:15-59:39]
+                  Name [67:35-67:36]: j
+                    # defined at: [81:5-81:19]
+              Binary [68:13-68:36]: ASSIGN
+                Binary [68:14-68:24]: ARR
+                  Name [68:14-68:21]: stevila
+                    # defined at: [59:15-59:39]
+                  Name [68:22-68:23]: j
+                    # defined at: [81:5-81:19]
+                Name [68:27-68:35]: swapTemp
+                  # defined at: [78:5-78:26]
+        Block [72:5-74:31]
+          Binary [72:6-72:31]: ASSIGN
+            Name [72:7-72:15]: swapTemp
+              # defined at: [78:5-78:26]
+            Binary [72:18-72:30]: ARR
+              Name [72:18-72:25]: stevila
+                # defined at: [59:15-59:39]
+              Binary [72:26-72:29]: ADD
+                Name [72:26-72:27]: i
+                  # defined at: [80:5-80:19]
+                Literal [72:28-72:29]: INT(1)
+          Binary [73:5-73:34]: ASSIGN
+            Binary [73:6-73:18]: ARR
+              Name [73:6-73:13]: stevila
+                # defined at: [59:15-59:39]
+              Binary [73:14-73:17]: ADD
+                Name [73:14-73:15]: i
+                  # defined at: [80:5-80:19]
+                Literal [73:16-73:17]: INT(1)
+            Binary [73:21-73:33]: ARR
+              Name [73:21-73:28]: stevila
+                # defined at: [59:15-59:39]
+              Name [73:29-73:32]: end
+                # defined at: [59:57-59:69]
+          Binary [74:5-74:30]: ASSIGN
+            Binary [74:6-74:18]: ARR
+              Name [74:6-74:13]: stevila
+                # defined at: [59:15-59:39]
+              Name [74:14-74:17]: end
+                # defined at: [59:57-59:69]
+            Name [74:21-74:29]: swapTemp
+              # defined at: [78:5-78:26]
+        Block [76:5-76:12]
+          Binary [76:6-76:11]: ADD
+            Name [76:6-76:7]: i
+              # defined at: [80:5-80:19]
+            Literal [76:10-76:11]: INT(1)
+  FunDef [84:1-85:55]: izpis
+    Parameter [84:11-84:27]: besedilo
+      Atom [84:21-84:27]: STR
+    TypeName [84:30-84:34]: void
+      # defined at: [12:1-12:18]
+    Call [85:5-85:55]: print
+      # defined at: [87:1-87:47]
+      Literal [85:11-85:54]: STR(Tvoj program je prestal celoten preizkus!)
+  FunDef [87:1-87:47]: print
+    Parameter [87:11-87:27]: besedilo
+      Atom [87:21-87:27]: STR
+    Atom [87:30-87:36]: STR
+    Name [87:39-87:47]: besedilo
+      # defined at: [87:11-87:27]

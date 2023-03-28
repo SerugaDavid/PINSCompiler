@@ -5,10 +5,12 @@
 
 package compiler.seman.name.env;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 import common.VoidOperator;
 import compiler.parser.ast.def.Def;
+import compiler.parser.ast.type.Array;
 
 public interface SymbolTable {
     /**
@@ -47,6 +49,8 @@ public interface SymbolTable {
         op.apply();
         popScope();
     }
+
+    ArrayList<String> getDefs();
 
     /**
      * Napaka v primeru vstavljanja že obstoječe definicije.

@@ -73,6 +73,17 @@ public class FastSymbolTable implements SymbolTable {
         currentScope--;
     }
 
+    @Override
+    public ArrayList<String> getDefs() {
+        var defs = new ArrayList<String>();
+        for (var entry : env.entrySet()) {
+            for (var pair : entry.getValue()) {
+                defs.add(pair.def.name);
+            }
+        }
+        return defs;
+    }
+
     private static class Pair {
         final int scope;
         final Def def;

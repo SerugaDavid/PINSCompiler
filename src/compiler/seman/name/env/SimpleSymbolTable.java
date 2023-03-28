@@ -63,6 +63,17 @@ public class SimpleSymbolTable implements SymbolTable {
         stack.remove(stack.size() - 1);
     }
 
+    @Override
+    public ArrayList<String> getDefs() {
+        var defs = new ArrayList<String>();
+        for (var env : stack) {
+            for (var def : env.mapping.values()) {
+                defs.add(def.name);
+            }
+        }
+        return defs;
+    }
+
     private static class Env {
         HashMap<String, Def> mapping = new HashMap<>();
     }

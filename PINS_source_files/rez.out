@@ -1,0 +1,6 @@
+Defs [1:1-2:18]
+  VarDef [1:1-1:12]: x
+    TypeName [1:9-1:12]: int
+      # defined at: [2:1-2:18]
+  TypeDef [2:1-2:18]: int
+    Atom [2:11-2:18]: INT

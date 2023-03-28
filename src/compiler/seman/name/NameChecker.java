@@ -52,20 +52,25 @@ public class NameChecker implements Visitor {
          * Watch out for variable or type calls instead of function calls
          */
 
-        Optional<Def> def = this.symbolTable.definitionFor(call.name);
-        if (def.isEmpty()) {
+        Optional<Def> opDef = this.symbolTable.definitionFor(call.name);
+        if (opDef.isEmpty()) {
             Report.error(call.position, "Function " + call.name + " is not defined. Called at: " + call.position);
         }
+        Def def = opDef.get();
 
         // Check if it is a function call
-        if (def.get() instanceof VarDef) {
+        if (def instanceof VarDef) {
             Report.error(call.position, "Variables are not callable. Called at: " + call.position);
-        } else if (def.get() instanceof TypeDef) {
+        } else if (def instanceof TypeDef) {
             Report.error(call.position, "Types are not callable. Called at: " + call.position);
         } else {
-            // Handle if we need to check function parameters
-            // If not, ok...
+            // Check parameter names
+            for (Expr expr : call.arguments) {
+                expr.accept(this);
+            }
         }
+
+        this.definitions.store(def, call);
     }
 
     @Override
@@ -112,12 +117,18 @@ public class NameChecker implements Visitor {
          * Check if name is defined
          */
 
-        Optional<Def> def = this.symbolTable.definitionFor(name.name);
-        if (def.isEmpty()) {
+        Optional<Def> opDef = this.symbolTable.definitionFor(name.name);
+        if (opDef.isEmpty()) {
             Report.error(name.position, "Name " + name + " is not defined. Called at: " + name.position);
         }
-        // Handle what kind of definition is this and if its appropriate
-        // If this is even needed
+
+        Def def = opDef.get();
+        if (def instanceof TypeDef) {
+            Report.error(name.position, "Name " + name + " is a type. Called at: " + name.position);
+        } else if (def instanceof FunDef) {
+            Report.error(name.position, "Name " + name + " is a function. Called at: " + name.position);
+        }
+        this.definitions.store(def, name);
     }
 
     @Override

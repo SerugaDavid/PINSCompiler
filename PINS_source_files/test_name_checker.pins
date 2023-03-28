@@ -1,0 +1,9 @@
+typ prvic:string;
+typ drugic : integer;
+typ tretjic : string;
+typ cetrtic: arr[7] arr[7] logical;
+var petic : arr [ 10 ] integer;
+
+#var drugic : prvic;
+var sestic : drugic;
+var sedmic : cetrtic

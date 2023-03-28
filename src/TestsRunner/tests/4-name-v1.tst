@@ -1,5 +1,6 @@
 !compiler_flags: --dump NAME --exec NAME
 
+!name: Program 1
 !code:
 var x : integer;
 fun f ( y : integer ) : logical = x + y
@@ -18,6 +19,7 @@ Defs [1:1-2:40]
         # defined at: [2:9-2:20]
 !end
 
+!name: Program 2
 !code:
 typ t1 : t2;
 typ t2 : t3;
@@ -34,6 +36,7 @@ Defs [1:1-3:17]
     Atom [3:10-3:17]: LOG
 !end
 
+!name: Program 3
 !code:
 var x: integer;
 var y: logical;
@@ -57,7 +60,7 @@ Defs [1:1-6:18]
     Atom [6:12-6:18]: STR
 !end
 
-
+!name: Program 4
 !code:
 var izraz1 : integer;
 fun main ( x : integer ) : integer = (
@@ -90,7 +93,7 @@ Defs [1:1-4:2]
               Literal [3:39-3:40]: INT(6)
 !end
 
-
+!name: Program 5
 !code:
 var izraz1 : integer;
 fun main ( x : integer ) : integer = (
@@ -123,7 +126,7 @@ Defs [1:1-4:2]
                 Literal [3:39-3:40]: INT(6)
 !end
 
-
+!name: Program 6
 !code:
 var izraz1 : integer;
 fun main ( x : integer ) : integer = (
@@ -156,7 +159,7 @@ Defs [1:1-4:2]
           Literal [3:40-3:41]: INT(1)
 !end
 
-
+!name: Program 7
 !code:
 fun swap(tab : arr[20] integer, i : integer, j : integer) : integer = (
     {tmp = tab[i]},
@@ -209,7 +212,7 @@ Defs [1:1-5:28]
             # defined at: [5:10-5:27]
 !end
 
-
+!name: Program 8
 !code:
 # program ki presteje stevilo sodih stevil
 fun main ( tab : arr[20] integer ) : integer = (
@@ -223,7 +226,7 @@ fun main ( tab : arr[20] integer ) : integer = (
 99
 !end
 
-
+!name: Program 9
 !code:
 fun main(x: integer): integer = (
     ( {for i = 0, 10, 1:
@@ -290,7 +293,7 @@ Defs [1:1-10:35]
     Literal [10:34-10:35]: INT(0)
 !end
 
-
+!name: Program 10
 !code:
 fun main( x: integer ) : integer = (
     { if 1 == 1 & 2 == 2 | 3 == 3 | 4 == 4
@@ -389,7 +392,7 @@ Defs [1:1-27:2]
       Literal [26:8-26:9]: INT(0)
 !end
 
-
+!name: Program 11
 !code:
 # quicksort
 fun partition (tab: arr[100] integer, low: integer, high: integer) : integer = (
@@ -603,7 +606,7 @@ Defs [2:1-27:2]
                 # defined at: [21:47-21:60]
 !end
 
-
+!name: Program 12
 !code:
 typ prvic:string;
 typ drugic : integer;
@@ -965,7 +968,7 @@ Defs [1:1-45:6]
               # defined at: [10:1-10:22]
 !end
 
-
+!name: Program 13
 !code:
 ####### ULTIMATE TEST PINS 2k69 ######
 
@@ -1603,7 +1606,7 @@ Defs [5:1-87:47]
       # defined at: [87:11-87:27]
 !end
 
-
+!name: Program 14
 !code:
 typ y: y;
 typ x: integer;
@@ -1631,6 +1634,7 @@ Defs [1:1-4:37]
       Literal [4:35-4:36]: INT(3)
 !end
 
+!name: Program 15
 !code: 
 typ x: integer;
 fun g(y: x): integer = (12) {
@@ -1640,6 +1644,7 @@ fun g(y: x): integer = (12) {
 99
 !end
 
+!name: Program 16
 !code:
 typ x: integer;
 fun g(x: x): integer = (12) {

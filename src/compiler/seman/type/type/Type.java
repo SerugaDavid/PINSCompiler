@@ -136,7 +136,6 @@ public abstract class Type {
         public boolean equals(Type t) {
             Optional<Atom> type = t.asAtom();
             return type.isPresent() && type.get().kind == this.kind;
-            };
         }
 
         @Override

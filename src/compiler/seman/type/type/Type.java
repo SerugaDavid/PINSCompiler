@@ -7,6 +7,7 @@ package compiler.seman.type.type;
 
 import static common.RequireNonNull.requireNonNull;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -133,7 +134,9 @@ public abstract class Type {
 
         @Override
         public boolean equals(Type t) {
-            throw new RuntimeException("Implementiraj ...");
+            Optional<Atom> type = t.asAtom();
+            return type.isPresent() && type.get().kind == this.kind;
+            };
         }
 
         @Override
@@ -193,7 +196,8 @@ public abstract class Type {
 
         @Override
         public boolean equals(Type t) {
-            throw new RuntimeException("Implementiraj ...");
+            Optional<Array> type = t.asArray();
+            return type.isPresent() && type.get().size == this.size && type.get().type.equals(this.type);
         }
 
         @Override
@@ -235,7 +239,10 @@ public abstract class Type {
 
         @Override
         public boolean equals(Type t) {
-            throw new RuntimeException("Implementiraj ...");
+            Optional<Function> type = t.asFunction();
+            return type.isPresent() &&
+                    type.get().returnType.equals(this.returnType) &&
+                    type.get().parameters.equals(this.parameters);
         }
 
         @Override

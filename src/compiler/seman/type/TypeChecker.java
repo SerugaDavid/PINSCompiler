@@ -16,6 +16,9 @@ import compiler.parser.ast.type.*;
 import compiler.seman.common.NodeDescription;
 import compiler.seman.type.type.Type;
 
+import java.util.ArrayList;
+import java.util.Optional;
+
 public class TypeChecker implements Visitor {
     /**
      * Opis vozlišč in njihovih definicij.
@@ -95,49 +98,90 @@ public class TypeChecker implements Visitor {
 
     @Override
     public void visit(Defs defs) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        for (Def def:defs.definitions) {
+            def.accept(this);
+        }
     }
 
     @Override
     public void visit(FunDef funDef) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        // get parameter types
+        ArrayList<Type> parameters = new ArrayList<>();
+        Optional<Type> type;
+        for (Parameter par:funDef.parameters) {
+            par.accept(this);
+            type = this.types.valueFor(par);
+            parameters.add(type.get());
+        }
+
+        // get return type
+        Type returnType;
+        funDef.type.accept(this);
+        type = this.types.valueFor(funDef.type);
+        returnType = type.get();
+
+        // save
+        Type.Function funType = new Type.Function(parameters, returnType);
+        this.types.store(funType, funDef);
+
+        // visit body
+        funDef.body.accept(this);
     }
 
     @Override
     public void visit(TypeDef typeDef) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        typeDef.type.accept(this);
+        Optional<Type> type = this.types.valueFor(typeDef.type);
+        this.types.store(type.get(), typeDef);
     }
 
     @Override
     public void visit(VarDef varDef) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        varDef.type.accept(this);
+        Optional<Type> type = this.types.valueFor(varDef.type);
+        this.types.store(type.get(), varDef);
     }
 
     @Override
     public void visit(Parameter parameter) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        parameter.type.accept(this);
+        Optional<Type> type = this.types.valueFor(parameter.type);
+        this.types.store(type.get(), parameter);
     }
 
     @Override
     public void visit(Array array) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        int size = array.size;
+        array.type.accept(this);
+        Optional<Type> type = this.types.valueFor(array.type);
+        Type.Array arrayType = new Type.Array(size, type.get());
+        this.types.store(arrayType, array);
     }
 
     @Override
     public void visit(Atom atom) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        Type.Atom.Kind kind = switch (atom.type) {
+            case LOG -> Type.Atom.Kind.LOG;
+            case INT -> Type.Atom.Kind.INT;
+            case STR -> Type.Atom.Kind.STR;
+        };
+        Type.Atom atomType = new Type.Atom(kind);
+        this.types.store(atomType, atom);
     }
 
     @Override
     public void visit(TypeName name) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        Optional<Def> def = this.definitions.valueFor(name);
+        if (def.isEmpty()) {
+            Report.error(name.position, "Missing definition for: " + name.identifier + ", at: " + name.position);
+        }
+
+        def.get().accept(this);
+        Optional<Type> type = this.types.valueFor(def.get());
+        if (type.isEmpty()) {
+            Report.error(def.get().position, "Something wrong in visitor TypeName at: " + def.get().position);
+        }
+
+        this.types.store(type.get(), name);
     }
 }

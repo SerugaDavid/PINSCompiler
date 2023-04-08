@@ -38,8 +38,37 @@ public class TypeChecker implements Visitor {
 
     @Override
     public void visit(Call call) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        // get definition and function type
+        Optional<Def> def = this.definitions.valueFor(call);
+        Optional<Type> functionType = this.types.valueFor(def.get());
+        // check if definition exists
+        if (functionType.isEmpty())
+            Report.error(call.position, "No type found for call at position: " + call.position);
+
+        // check if it's a function call
+        if (!(functionType.get() instanceof Type.Function))
+            Report.error(call.position, "Variable or type can't be called. Called at position: " + call.position);
+        Type.Function function = functionType.get().asFunction().get();
+
+        // get parameter and argument counts
+        int parameterCount = functionType.get().asFunction().get().parameters.size();
+        int argumentCount = call.arguments.size();
+        if (parameterCount != argumentCount)
+            Report.error(call.position, "Number of arguments doesn't match number of parameters. Called at position: " + call.position + "\nExpected " + parameterCount + " arguments, got " + argumentCount);
+
+        // check if types match for all arguments
+        for (int i = 0; i < parameterCount; i++) {
+            Expr argument = call.arguments.get(i);
+            Type parameterType = function.parameters.get(i);
+            argument.accept(this);
+            Optional<Type> argumentType = this.types.valueFor(argument);
+            if (argumentType.isEmpty())
+                Report.error(argument.position, "No type found for argument at position: " + argument.position);
+            if (!argumentType.get().equals(parameterType))
+                Report.error(argument.position, "Argument type doesn't match parameter type. Called at position: " + argument.position + "\nExpected " + parameterType + ", got " + argumentType.get());
+        }
+
+        this.types.store(function.returnType, call);
     }
 
     @Override

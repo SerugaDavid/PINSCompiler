@@ -73,8 +73,48 @@ public class TypeChecker implements Visitor {
 
     @Override
     public void visit(Binary binary) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        // get types
+        binary.left.accept(this);
+        binary.right.accept(this);
+        Optional<Type> leftType = this.types.valueFor(binary.left);
+        Optional<Type> rightType = this.types.valueFor(binary.right);
+
+        // check for types
+        if (leftType.isEmpty() || rightType.isEmpty())
+            Report.error(binary.position, "No type found for binary expression at position: " + binary.position);
+
+        // check for array call
+        if (binary.operator == Binary.Operator.ARR) {
+            if (!(leftType.get() instanceof Type.Array))
+                Report.error(binary.left.position, "Array call on non-array type at position: " + binary.left.position);
+            if (!rightType.get().isInt())
+                Report.error(binary.right.position, "Index must be of integer type at position: " + binary.right.position);
+            Type arrayType = leftType.get().asArray().get().type;
+            this.types.store(arrayType, binary);
+            return;
+        }
+
+        // check if types are equal
+        if (!leftType.get().equals(rightType.get()))
+            Report.error(binary.position, "Binary expression at position: " + binary.position + " has different types on both sides");
+
+        // check for logical operators
+        if (binary.operator.isAndOr() || binary.operator.isComparison()) {
+            Type.Atom.Kind kind = Type.Atom.Kind.LOG;
+            Type.Atom type = new Type.Atom(kind);
+            this.types.store(type, binary);
+            return;
+        }
+
+        // check for arithmetic operators
+        if (binary.operator.isArithmetic()) {
+            Type type = leftType.get();
+            this.types.store(type, binary);
+            return;
+        }
+
+        // curently unknown error
+        Report.error(binary.position, "Something wrong in binary expression at position: " + binary.position);
     }
 
     @Override

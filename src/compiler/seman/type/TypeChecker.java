@@ -131,8 +131,11 @@ public class TypeChecker implements Visitor {
 
     @Override
     public void visit(Name name) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        Optional<Def> def = this.definitions.valueFor(name);
+        Optional<Type> type = this.types.valueFor(def.get());
+        if (type.isEmpty())
+            Report.error(name.position, "No type found for name: '" + name.name + "' at position: " + name.position);
+        this.types.store(type.get(), name);
     }
 
     @Override
@@ -143,8 +146,13 @@ public class TypeChecker implements Visitor {
 
     @Override
     public void visit(Literal literal) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        Type.Atom.Kind kind = switch (literal.type) {
+            case STR -> Type.Atom.Kind.STR;
+            case INT -> Type.Atom.Kind.INT;
+            case LOG -> Type.Atom.Kind.LOG;
+        };
+        Type.Atom atom = new Type.Atom(kind);
+        this.types.store(atom, literal);
     }
 
     @Override

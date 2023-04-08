@@ -169,8 +169,12 @@ public class TypeChecker implements Visitor {
 
     @Override
     public void visit(Where where) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        // accept defs
+        where.defs.accept(this);
+        // get expression type
+        where.expr.accept(this);
+        Optional<Type> type = this.types.valueFor(where.expr);
+        this.types.store(type.get(), where);
     }
 
     @Override

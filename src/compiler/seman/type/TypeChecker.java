@@ -98,6 +98,14 @@ public class TypeChecker implements Visitor {
         if (!leftType.get().equals(rightType.get()))
             Report.error(binary.position, "Binary expression at position: " + binary.position + " has different types on both sides");
 
+        // check for assignment
+        if (binary.operator == Binary.Operator.ASSIGN) {
+            if (!(leftType.get() instanceof Type.Atom))
+                Report.error(binary.left.position, "Assignment can only be used on atom types at position: " + binary.left.position);
+            this.types.store(leftType.get(), binary);
+            return;
+        }
+
         // check for and or
         if (binary.operator.isAndOr()) {
             if (!leftType.get().isLog())

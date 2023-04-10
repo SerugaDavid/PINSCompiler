@@ -98,18 +98,30 @@ public class TypeChecker implements Visitor {
         if (!leftType.get().equals(rightType.get()))
             Report.error(binary.position, "Binary expression at position: " + binary.position + " has different types on both sides");
 
-        // check for logical operators
-        if (binary.operator.isAndOr() || binary.operator.isComparison()) {
-            Type.Atom.Kind kind = Type.Atom.Kind.LOG;
-            Type.Atom type = new Type.Atom(kind);
-            this.types.store(type, binary);
+        // check for and or
+        if (binary.operator.isAndOr()) {
+            if (!leftType.get().isLog())
+                Report.error(binary.position, "And and or operators can only be used on boolean types at position: " + binary.position);
+            Type.Atom log = new Type.Atom(Type.Atom.Kind.LOG);
+            this.types.store(log, binary);
             return;
         }
 
-        // check for arithmetic operators
+        // check for arithmetic
         if (binary.operator.isArithmetic()) {
-            Type type = leftType.get();
-            this.types.store(type, binary);
+            if (!leftType.get().isInt())
+                Report.error(binary.position, "Arithmetic operators can only be used on integer types at position: " + binary.position);
+            Type.Atom intType = new Type.Atom(Type.Atom.Kind.INT);
+            this.types.store(intType, binary);
+            return;
+        }
+
+        // check for comparison
+        if (binary.operator.isComparison()) {
+            if (!(leftType.get().isInt() || leftType.get().isLog()))
+                Report.error(binary.position, "Comparison operators can only be used on integer and boolean types at position: " + binary.position);
+            Type.Atom log = new Type.Atom(Type.Atom.Kind.LOG);
+            this.types.store(log, binary);
             return;
         }
 
@@ -119,14 +131,45 @@ public class TypeChecker implements Visitor {
 
     @Override
     public void visit(Block block) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        // visit all expressions
+        for (Expr expr: block.expressions) {
+            expr.accept(this);
+        }
+        // make the block type, the type of the last expression
+        this.types.store(this.types.valueFor(block.expressions.get(block.expressions.size() - 1)).get(), block);
     }
 
     @Override
     public void visit(For forLoop) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        // visit all expressions and get types
+        forLoop.counter.accept(this);
+        forLoop.low.accept(this);
+        forLoop.high.accept(this);
+        forLoop.step.accept(this);
+        forLoop.body.accept(this);
+        Optional<Type> counterType = this.types.valueFor(forLoop.counter);
+        Optional<Type> lowType = this.types.valueFor(forLoop.low);
+        Optional<Type> highType = this.types.valueFor(forLoop.high);
+        Optional<Type> stepType = this.types.valueFor(forLoop.step);
+        Optional<Type> bodyType = this.types.valueFor(forLoop.body);
+
+        // check if types exist
+        if (counterType.isEmpty() || lowType.isEmpty() || highType.isEmpty() || stepType.isEmpty() || bodyType.isEmpty())
+            Report.error(forLoop.position, "No type found for for loop at position: " + forLoop.position);
+
+        // check if types are correct
+        if (!counterType.get().isInt())
+            Report.error(forLoop.counter.position, "Counter must be of integer type at position: " + forLoop.counter.position);
+        if (!lowType.get().isInt())
+            Report.error(forLoop.low.position, "Low must be of integer type at position: " + forLoop.low.position);
+        if (!highType.get().isInt())
+            Report.error(forLoop.high.position, "High must be of integer type at position: " + forLoop.high.position);
+        if (!stepType.get().isInt())
+            Report.error(forLoop.step.position, "Step must be of integer type at position: " + forLoop.step.position);
+
+        // save void type for for-loop
+        Type.Atom voidType = new Type.Atom(Type.Atom.Kind.VOID);
+        this.types.store(voidType, forLoop);
     }
 
     @Override
@@ -140,8 +183,22 @@ public class TypeChecker implements Visitor {
 
     @Override
     public void visit(IfThenElse ifThenElse) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        // visit expression types
+        ifThenElse.condition.accept(this);
+        ifThenElse.thenExpression.accept(this);
+        if (ifThenElse.elseExpression.isPresent())
+            ifThenElse.elseExpression.get().accept(this);
+
+        // get expression types
+        Optional<Type> conditionType = this.types.valueFor(ifThenElse.condition);
+
+        // check for LOG type
+        if (!conditionType.get().isLog())
+            Report.error(ifThenElse.condition.position, "Condition must be of logical type at position: " + ifThenElse.condition.position);
+
+        // save void type
+        Type.Atom voidType = new Type.Atom(Type.Atom.Kind.VOID);
+        this.types.store(voidType, ifThenElse);
     }
 
     @Override
@@ -157,14 +214,39 @@ public class TypeChecker implements Visitor {
 
     @Override
     public void visit(Unary unary) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        // visit and expression type
+        unary.expr.accept(this);
+        Optional<Type> type = this.types.valueFor(unary.expr);
+        if (type.isEmpty())
+            Report.error(unary.position, "No type found for unary expression at position: " + unary.position);
+
+        // check for correct type for operator
+        if (unary.operator == Unary.Operator.NOT) {
+            if (!type.get().isLog())
+                Report.error(unary.position, "Unary expression at position: " + unary.position + " must be of logical type");
+        } else if (unary.operator == Unary.Operator.ADD || unary.operator == Unary.Operator.SUB) {
+            if (!type.get().isInt())
+                Report.error(unary.position, "Unary expression at position: " + unary.position + " must be of integer type");
+        }
+
+        // store type
+        this.types.store(type.get(), unary);
     }
 
     @Override
     public void visit(While whileLoop) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        // visit all expressions and get types
+        whileLoop.condition.accept(this);
+        whileLoop.body.accept(this);
+
+        // get and check condition type
+        Optional<Type> conditionType = this.types.valueFor(whileLoop.condition);
+        if (!conditionType.get().isLog())
+            Report.error(whileLoop.condition.position, "Condition must be of logical type at position: " + whileLoop.condition.position);
+
+        // save void type
+        Type.Atom voidType = new Type.Atom(Type.Atom.Kind.VOID);
+        this.types.store(voidType, whileLoop);
     }
 
     @Override

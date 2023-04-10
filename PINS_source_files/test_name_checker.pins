@@ -49,10 +49,10 @@ fun firstfunction(x: integer, y: string, z: logical, n: arr[69] arr[420] string)
 				  if a * 10 >= 100 then {a = a - 10} else 0
 				},
 					{ for j = 1, j < 10, {j=j*2}: firstfunction('blablabla') }:
-						{a[i+10-20*30][j-10-203] = 12}
+						{a = 12}
 		}
 	)
-{ where var i:integer; var a: logical; var j: integer; fun secondfunction(x: integer):integer = 10+20|30-40&123==20 { where
+{ where var i:integer; var a: integer; var j: integer; fun secondfunction(x: integer):integer = x*2 { where
 fun thirdfunction(y: string):arr[10] string = ({10*20=xyz}) {where var xyz: integer}}
 };
 

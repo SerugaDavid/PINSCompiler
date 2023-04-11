@@ -40,6 +40,7 @@ public class TypeChecker implements Visitor {
     public void visit(Call call) {
         // get definition and function type
         Optional<Def> def = this.definitions.valueFor(call);
+        def.get().accept(this);
         Optional<Type> functionType = this.types.valueFor(def.get());
         // check if definition exists
         if (functionType.isEmpty())
@@ -276,9 +277,14 @@ public class TypeChecker implements Visitor {
 
     @Override
     public void visit(FunDef funDef) {
+        // check if already defined
+        Optional<Type> type = this.types.valueFor(funDef);
+        if (type.isPresent())
+            return;
+
         // get parameter types
         ArrayList<Type> parameters = new ArrayList<>();
-        Optional<Type> type;
+
         for (Parameter par:funDef.parameters) {
             par.accept(this);
             type = this.types.valueFor(par);

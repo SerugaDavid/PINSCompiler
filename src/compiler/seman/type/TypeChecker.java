@@ -270,6 +270,8 @@ public class TypeChecker implements Visitor {
 
     @Override
     public void visit(Defs defs) {
+        // TODO: implement cycle detection
+
         for (Def def:defs.definitions) {
             def.accept(this);
         }
@@ -307,15 +309,25 @@ public class TypeChecker implements Visitor {
 
     @Override
     public void visit(TypeDef typeDef) {
+        // check if already defined
+        Optional<Type> type = this.types.valueFor(typeDef);
+        if (type.isPresent())
+            return;
+
         typeDef.type.accept(this);
-        Optional<Type> type = this.types.valueFor(typeDef.type);
+        type = this.types.valueFor(typeDef.type);
         this.types.store(type.get(), typeDef);
     }
 
     @Override
     public void visit(VarDef varDef) {
+        // check if already defined
+        Optional<Type> type = this.types.valueFor(varDef);
+        if (type.isPresent())
+            return;
+
         varDef.type.accept(this);
-        Optional<Type> type = this.types.valueFor(varDef.type);
+        type = this.types.valueFor(varDef.type);
         this.types.store(type.get(), varDef);
     }
 

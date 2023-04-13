@@ -44,3 +44,17 @@ Methods from SYN return AST nodes. AST nodes are
 defined in `./src/compiler/parser/ast/`.
 
 With this we can generate an abstract syntax tree.
+
+### NAME CHECKING (4h)
+Checks all the names in the AST and connects each name to its
+declaration. Also checks for name collisions and all that fun
+stuff.
+
+First time using a visitor pattern. Didn't use all the prepared
+methods. Can find code in `./src/compiler/seman/name/`.
+
+### TYPE CHECKING (6-7h)
+Checks every type it can find and figures out if types are all ok.
+Here we also check for type cycles using DFS. 
+
+Types must match based on what kind of expression we are using.

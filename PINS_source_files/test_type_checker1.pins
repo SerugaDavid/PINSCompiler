@@ -1,2 +1,14 @@
-var a:x;
-typ x:integer
+typ a:b;
+
+
+typ int:a;
+
+typ b:c;
+
+typ g:int;
+
+typ d:e;
+typ e:f;
+
+typ c:d;
+typ f:g

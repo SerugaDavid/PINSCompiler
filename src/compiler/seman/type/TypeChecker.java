@@ -306,6 +306,11 @@ public class TypeChecker implements Visitor {
 
         // visit body
         funDef.body.accept(this);
+
+        // check if return type matches body type
+        type = this.types.valueFor(funDef.body);
+        if (!type.get().equals(returnType))
+            Report.error(funDef.body.position, "Return type does not match body type at position: " + funDef.body.position);
     }
 
     @Override

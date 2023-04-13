@@ -17,6 +17,7 @@ import compiler.seman.common.NodeDescription;
 import compiler.seman.type.type.Type;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Optional;
 
 public class TypeChecker implements Visitor {
@@ -270,7 +271,7 @@ public class TypeChecker implements Visitor {
 
     @Override
     public void visit(Defs defs) {
-        // TODO: implement cycle detection
+        this.detectCycles(defs);
 
         for (Def def:defs.definitions) {
             def.accept(this);
@@ -372,5 +373,70 @@ public class TypeChecker implements Visitor {
         }
 
         this.types.store(type.get(), name);
+    }
+
+    private void detectCycles(Defs defs) {
+        // we will use DFS to detect cycles
+        // data structure to hold visited nodes
+        HashSet<Def> visited;
+
+        for (Def def:defs.definitions) {
+            visited = new HashSet<>();
+            this.visitNode(def, visited);
+        }
+    }
+
+    private void visitNode(Def def, HashSet<Def> visited) {
+        if (def instanceof FunDef)
+            this.visitNode((FunDef) def, visited);
+        else if (def instanceof TypeDef)
+            this.visitNode((TypeDef) def, visited);
+        else if (def instanceof VarDef)
+            this.visitNode((VarDef) def, visited);
+    }
+
+    private void visitNode(TypeDef def, HashSet<Def> visited) {
+        // check if already visited
+        if (visited.contains(def))
+            Report.error(def.position, "Cycle detected at: " + def.position);
+
+        // mark as visited
+        visited.add(def);
+
+        // check if type is typename
+        if (def.type instanceof TypeName) {
+            Def typeDef = this.definitions.valueFor(def.type).get();
+            this.visitNode(typeDef, visited);
+        }
+    }
+
+    private void visitNode(VarDef def, HashSet<Def> visited) {
+        // check if already visited
+        if (visited.contains(def))
+            Report.error(def.position, "Cycle detected at: " + def.position);
+
+        // mark as visited
+        visited.add(def);
+
+        // check if type is typename
+        if (def.type instanceof TypeName) {
+            Def typeDef = this.definitions.valueFor(def.type).get();
+            this.visitNode(typeDef, visited);
+        }
+    }
+
+    private void visitNode(FunDef def, HashSet<Def> visited) {
+        // check if already visited
+        if (visited.contains(def))
+            Report.error(def.position, "Cycle detected at: " + def.position);
+
+        // mark as visited
+        visited.add(def);
+
+        // check if type is typename
+        if (def.type instanceof TypeName) {
+            Def typeDef = this.definitions.valueFor(def.type).get();
+            this.visitNode(typeDef, visited);
+        }
     }
 }

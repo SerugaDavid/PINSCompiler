@@ -1,14 +1,1 @@
-typ a:b;
-
-
-typ int:a;
-
-typ b:c;
-
-typ g:int;
-
-typ d:e;
-typ e:f;
-
-typ c:d;
-typ f:g
+fun f(x: logical, y: logical):string = x == y

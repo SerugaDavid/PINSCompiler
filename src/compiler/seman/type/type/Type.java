@@ -124,12 +124,12 @@ public abstract class Type {
 
         @Override
         public int sizeInBytes() {
-            throw new RuntimeException("Implementiraj ...");
+            return Constants.WordSize;
         }
 
         @Override
         public int sizeInBytesAsParam() {
-            throw new RuntimeException("Implementiraj ...");
+            return Constants.WordSize;
         }
 
         @Override
@@ -181,16 +181,16 @@ public abstract class Type {
 
         @Override
         public int sizeInBytes() {
-            throw new RuntimeException("Implementiraj ...");
+            return this.size * this.type.sizeInBytes();
         }
 
         @Override
         public int sizeInBytesAsParam() {
-            throw new RuntimeException("Implementiraj ...");
+            return this.type.sizeInBytesAsParam();
         }
 
         public int elementSizeInBytes() {
-            return type.sizeInBytes();
+            return this.type.sizeInBytes();
         }
 
         @Override

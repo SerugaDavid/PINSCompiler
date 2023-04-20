@@ -38,6 +38,11 @@ public class FrameEvaluator implements Visitor {
      */
     private final NodeDescription<Type> types;
 
+    /**
+     * Ali smo trenutno v globalnem okolju.
+     */
+    private boolean isGlobal;
+
     public FrameEvaluator(
         NodeDescription<Frame> frames, 
         NodeDescription<Access> accesses,
@@ -49,6 +54,7 @@ public class FrameEvaluator implements Visitor {
         this.accesses = accesses;
         this.definitions = definitions;
         this.types = types;
+        this.isGlobal = true;
     }
 
     @Override
@@ -123,8 +129,9 @@ public class FrameEvaluator implements Visitor {
 
     @Override
     public void visit(Defs defs) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        for (Def def : defs.definitions) {
+            def.accept(this);
+        }
     }
 
 
@@ -144,8 +151,16 @@ public class FrameEvaluator implements Visitor {
 
     @Override
     public void visit(VarDef varDef) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        Access access;
+        if (this.isGlobal) {
+            access = new Access.Global(this.types.valueFor(varDef).get().sizeInBytes(), Frame.Label.named(varDef.name));
+        } else {
+            // TODO: get values for offset and staticLevel
+            int offset = 0;
+            int staticLevel = 0;
+            access = new Access.Local(this.types.valueFor(varDef).get().sizeInBytes(), offset, staticLevel);
+        }
+        this.accesses.store(access, varDef);
     }
 
 

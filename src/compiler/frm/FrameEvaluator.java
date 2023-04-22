@@ -195,7 +195,7 @@ public class FrameEvaluator implements Visitor {
     @Override
     public void visit(Parameter parameter) {
         int size = this.types.valueFor(parameter).get().sizeInBytes();
-        int offset = this.frameBuilder.addLocalVariable(size);
+        int offset = this.frameBuilder.addParameter(size);
         int staticLevel = this.frameBuilder.staticLevel;
         Access access = new Access.Local(size, offset, staticLevel);
         this.accesses.store(access, parameter);

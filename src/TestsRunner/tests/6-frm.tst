@@ -1,4 +1,4 @@
-!compiler_flags: --dump TYP --exec TYP
+!compiler_flags: --dump FRM --exec FRM
 
 !name: Program 1
 !code:
@@ -1480,8 +1480,8 @@ Defs [1:1-52:17]
       # typed as: log
 !end
 
-!name Program 6 (gnezdene funkcije)
-!code
+!name: Program 6 (gnezdene funkcije)
+!code:
 # https://open.kattis.com/problems/server
 # standard input is given as program arguments
 # standard output is a return statement at the end of the main function

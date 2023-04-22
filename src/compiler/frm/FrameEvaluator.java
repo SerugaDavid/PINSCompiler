@@ -104,7 +104,8 @@ public class FrameEvaluator implements Visitor {
     public void visit(IfThenElse ifThenElse) {
         ifThenElse.condition.accept(this);
         ifThenElse.thenExpression.accept(this);
-        ifThenElse.elseExpression.get().accept(this);
+        if (ifThenElse.elseExpression.isPresent())
+            ifThenElse.elseExpression.get().accept(this);
     }
 
 

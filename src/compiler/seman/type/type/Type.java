@@ -186,7 +186,7 @@ public abstract class Type {
 
         @Override
         public int sizeInBytesAsParam() {
-            return this.type.sizeInBytesAsParam();
+            return Constants.WordSize;
         }
 
         public int elementSizeInBytes() {

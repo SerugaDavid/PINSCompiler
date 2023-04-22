@@ -72,64 +72,66 @@ public class FrameEvaluator implements Visitor {
 
     @Override
     public void visit(Binary binary) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        binary.left.accept(this);
+        binary.right.accept(this);
     }
 
 
     @Override
     public void visit(Block block) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        for (Expr expr : block.expressions)
+            expr.accept(this);
     }
 
 
     @Override
     public void visit(For forLoop) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        forLoop.low.accept(this);
+        forLoop.high.accept(this);
+        forLoop.step.accept(this);
+        forLoop.body.accept(this);
     }
 
 
     @Override
     public void visit(Name name) {
-        // TODO Auto-generated method stub
+        // This method is not needed.
         throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }
 
 
     @Override
     public void visit(IfThenElse ifThenElse) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        ifThenElse.condition.accept(this);
+        ifThenElse.thenExpression.accept(this);
+        ifThenElse.elseExpression.get().accept(this);
     }
 
 
     @Override
     public void visit(Literal literal) {
-        // TODO Auto-generated method stub
+        // This method is not needed.
         throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }
 
 
     @Override
     public void visit(Unary unary) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        unary.expr.accept(this);
     }
 
 
     @Override
     public void visit(While whileLoop) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        whileLoop.condition.accept(this);
+        whileLoop.body.accept(this);
     }
 
 
     @Override
     public void visit(Where where) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        where.defs.accept(this);
+        where.expr.accept(this);
     }
 
 
@@ -202,21 +204,21 @@ public class FrameEvaluator implements Visitor {
 
     @Override
     public void visit(Array array) {
-        // TODO Auto-generated method stub
+        // This method is not needed.
         throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }
 
 
     @Override
     public void visit(Atom atom) {
-        // TODO Auto-generated method stub
+        // This method is not needed.
         throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }
 
 
     @Override
     public void visit(TypeName name) {
-        // TODO Auto-generated method stub
+        // This method is not needed.
         throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }
 }

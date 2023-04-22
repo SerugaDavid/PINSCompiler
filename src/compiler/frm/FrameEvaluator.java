@@ -7,6 +7,7 @@ package compiler.frm;
 
 import static common.RequireNonNull.requireNonNull;
 
+import common.Constants;
 import compiler.common.Visitor;
 import compiler.parser.ast.def.*;
 import compiler.parser.ast.def.FunDef.Parameter;
@@ -65,9 +66,12 @@ public class FrameEvaluator implements Visitor {
 
     @Override
     public void visit(Call call) {
-        for (Expr expr : call.arguments)
+        int size = 0;
+        for (Expr expr : call.arguments) {
             expr.accept(this);
-        this.frameBuilder.addFunctionCall(call.arguments.size() + 1);
+            size += this.types.valueFor(expr).get().sizeInBytesAsParam();
+        }
+        this.frameBuilder.addFunctionCall(size + Constants.WordSize);
     }
 
 
@@ -196,7 +200,7 @@ public class FrameEvaluator implements Visitor {
         int size = this.types.valueFor(parameter).get().sizeInBytesAsParam();
         int offset = this.frameBuilder.addParameter(size);
         int staticLevel = this.frameBuilder.staticLevel;
-        Access access = new Access.Local(size, offset, staticLevel);
+        Access.Parameter access = new Access.Parameter(size, offset, staticLevel);
         this.accesses.store(access, parameter);
     }
 

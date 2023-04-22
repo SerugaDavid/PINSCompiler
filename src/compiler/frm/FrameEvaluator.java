@@ -65,8 +65,9 @@ public class FrameEvaluator implements Visitor {
 
     @Override
     public void visit(Call call) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        for (Expr expr : call.arguments)
+            expr.accept(this);
+        this.frameBuilder.addFunctionCall(call.arguments.size() + 1);
     }
 
 

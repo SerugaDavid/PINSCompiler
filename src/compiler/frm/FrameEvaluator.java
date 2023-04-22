@@ -192,8 +192,11 @@ public class FrameEvaluator implements Visitor {
 
     @Override
     public void visit(Parameter parameter) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        int size = this.types.valueFor(parameter).get().sizeInBytes();
+        int offset = this.frameBuilder.addLocalVariable(size);
+        int staticLevel = this.frameBuilder.staticLevel;
+        Access access = new Access.Local(size, offset, staticLevel);
+        this.accesses.store(access, parameter);
     }
 
 

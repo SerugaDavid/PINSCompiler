@@ -161,6 +161,9 @@ public class FrameEvaluator implements Visitor {
         } else
             this.frameBuilder = new Frame.Builder(Frame.Label.nextAnonymous(), prev.staticLevel + 1);
 
+        // add static link
+        this.frameBuilder.addParameter(Constants.WordSize);
+
         // visit parameters
         for (Parameter parameter : funDef.parameters)
             parameter.accept(this);

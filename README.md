@@ -58,3 +58,10 @@ Checks every type it can find and figures out if types are all ok.
 Here we also check for type cycles using DFS. 
 
 Types must match based on what kind of expression we are using.
+
+### FRAME BUILDING (3h)
+Checks definitions for variables and functions. For every variable
+found creates a new access and saves it and for every function it
+builds a frame for it.
+
+A lot of methods stayed unimplemented, because there is no need for it.

@@ -181,9 +181,9 @@ public class FrameEvaluator implements Visitor {
         if (this.isGlobal) {
             access = new Access.Global(this.types.valueFor(varDef).get().sizeInBytes(), Frame.Label.named(varDef.name));
         } else {
-            // TODO: get values for offset and staticLevel
-            int offset = 0;
-            int staticLevel = 0;
+            int size = this.types.valueFor(varDef).get().sizeInBytes();
+            int offset = this.frameBuilder.addLocalVariable(size);
+            int staticLevel = this.frameBuilder.staticLevel;
             access = new Access.Local(this.types.valueFor(varDef).get().sizeInBytes(), offset, staticLevel);
         }
         this.accesses.store(access, varDef);

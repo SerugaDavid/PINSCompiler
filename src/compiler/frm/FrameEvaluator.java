@@ -43,6 +43,11 @@ public class FrameEvaluator implements Visitor {
      */
     private boolean isGlobal;
 
+    /**
+     * Klicni zapis trenutne funkcije.
+     */
+    private Frame.Builder frameBuilder;
+
     public FrameEvaluator(
         NodeDescription<Frame> frames, 
         NodeDescription<Access> accesses,
@@ -55,6 +60,7 @@ public class FrameEvaluator implements Visitor {
         this.definitions = definitions;
         this.types = types;
         this.isGlobal = true;
+        this.frameBuilder = null;
     }
 
     @Override
@@ -129,22 +135,42 @@ public class FrameEvaluator implements Visitor {
 
     @Override
     public void visit(Defs defs) {
+        boolean isGlobal = this.isGlobal;
         for (Def def : defs.definitions) {
             def.accept(this);
+            this.isGlobal = isGlobal;
         }
     }
 
 
     @Override
     public void visit(FunDef funDef) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        // save previous frame builder
+        Frame.Builder prev = this.frameBuilder;
+
+        // create new frame builder
+        if (this.isGlobal) {
+            this.isGlobal = false;
+            this.frameBuilder = new Frame.Builder(Frame.Label.named(funDef.name), 1);
+        } else
+            this.frameBuilder = new Frame.Builder(Frame.Label.nextAnonymous(), prev.staticLevel + 1);
+
+        // visit parameters
+        for (Parameter parameter : funDef.parameters)
+            parameter.accept(this);
+
+        // visit body
+        funDef.body.accept(this);
+
+        // save and restore frame
+        this.frames.store(this.frameBuilder.build(), funDef);
+        this.frameBuilder = prev;
     }
 
 
     @Override
     public void visit(TypeDef typeDef) {
-        // TODO Auto-generated method stub
+        // This method is not needed.
         throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }
 

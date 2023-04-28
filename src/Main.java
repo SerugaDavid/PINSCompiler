@@ -15,6 +15,8 @@ import compiler.common.PrettyPrintVisitor4;
 import compiler.frm.Access;
 import compiler.frm.Frame;
 import compiler.frm.FrameEvaluator;
+import compiler.ir.IRCodeGenerator;
+import compiler.ir.IRPrettyPrint;
 import compiler.lexer.Lexer;
 import compiler.parser.Parser;
 import compiler.parser.ast.def.Def;
@@ -122,6 +124,17 @@ public class Main {
             ast.accept(prettyPrint);
         }
         if (cli.execPhase == Phase.FRM) {
+            return;
+        }
+        /**
+         * Generiranje vmesne kode.
+         */
+        var generator = new IRCodeGenerator(new NodeDescription<>(), frames, accesses, definitions, types);
+        ast.accept(generator);
+        if (cli.dumpPhases.contains(Phase.IMC)) {
+            new IRPrettyPrint(System.out, 2).print(generator.chunks);
+        }
+        if (cli.execPhase == Phase.IMC) {
             return;
         }
     }

@@ -82,8 +82,19 @@ public class IRCodeGenerator implements Visitor {
 
     @Override
     public void visit(Binary binary) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        binary.left.accept(this);
+        binary.right.accept(this);
+        IRExpr left = (IRExpr) this.imcCode.valueFor(binary.left).get();
+        IRExpr right = (IRExpr) this.imcCode.valueFor(binary.right).get();
+        if (binary.operator == Binary.Operator.ASSIGN) {
+            MoveStmt move = new MoveStmt(left, right);
+            this.imcCode.store(move, binary);
+        } else if (binary.operator == Binary.Operator.ARR) {
+            // TODO: array value
+        } else {
+            BinopExpr binop = new BinopExpr(left, right, BinopExpr.convertOp(binary.operator));
+            this.imcCode.store(binop, binary);
+        }
     }
 
     @Override

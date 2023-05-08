@@ -103,8 +103,17 @@ public class IRCodeGenerator implements Visitor {
 
     @Override
     public void visit(Block block) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        IRNode tmp = null;
+        List<IRStmt> statements = new ArrayList<>();
+        for (Expr expr : block.expressions) {
+            expr.accept(this);
+            tmp = this.imcCode.valueFor(expr).get();
+            if (tmp instanceof IRExpr)
+                tmp = new ExpStmt((IRExpr) tmp);
+            statements.add((IRStmt) tmp);
+        }
+        SeqStmt seq = new SeqStmt(statements);
+        this.imcCode.store(seq, block);
     }
 
     @Override
@@ -121,8 +130,39 @@ public class IRCodeGenerator implements Visitor {
 
     @Override
     public void visit(IfThenElse ifThenElse) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        // labels
+        Frame.Label trueLabel = Frame.Label.nextAnonymous();
+        Frame.Label falseLabel = Frame.Label.nextAnonymous();
+        LabelStmt trueLabelStmt = new LabelStmt(trueLabel);
+        LabelStmt falseLabelStmt = new LabelStmt(falseLabel);
+
+        // condition
+        ifThenElse.condition.accept(this);
+        IRExpr condition = (IRExpr) this.imcCode.valueFor(ifThenElse.condition).get();
+        CJumpStmt cjump = new CJumpStmt(condition, trueLabel, falseLabel);
+
+        // assemble with body
+        List<IRStmt> statements = new ArrayList<>();
+        IRNode tmp;
+        statements.add(cjump);
+        statements.add(trueLabelStmt);
+        ifThenElse.thenExpression.accept(this);
+        tmp = this.imcCode.valueFor(ifThenElse.thenExpression).get();
+        if (tmp instanceof IRExpr)
+            tmp = new ExpStmt((IRExpr) tmp);
+        statements.add((IRStmt) tmp);
+        statements.add(falseLabelStmt);
+        if (ifThenElse.elseExpression.isPresent()) {
+            ifThenElse.elseExpression.get().accept(this);
+            tmp = this.imcCode.valueFor(ifThenElse.elseExpression.get()).get();
+            if (tmp instanceof IRExpr)
+                tmp = new ExpStmt((IRExpr) tmp);
+            statements.add((IRStmt) tmp);
+        }
+
+        // create SeqStmt
+        SeqStmt seq = new SeqStmt(statements);
+        this.imcCode.store(seq, ifThenElse);
     }
 
     @Override

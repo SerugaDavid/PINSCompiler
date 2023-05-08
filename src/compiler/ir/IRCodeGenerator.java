@@ -84,15 +84,19 @@ public class IRCodeGenerator implements Visitor {
     public void visit(Binary binary) {
         binary.left.accept(this);
         binary.right.accept(this);
-        IRExpr left = (IRExpr) this.imcCode.valueFor(binary.left).get();
-        IRExpr right = (IRExpr) this.imcCode.valueFor(binary.right).get();
+        IRNode left = this.imcCode.valueFor(binary.left).get();
+        IRNode right = this.imcCode.valueFor(binary.right).get();
         if (binary.operator == Binary.Operator.ASSIGN) {
-            MoveStmt move = new MoveStmt(left, right);
+            MoveStmt move = new MoveStmt((IRExpr) left, (IRExpr) right);
             this.imcCode.store(move, binary);
         } else if (binary.operator == Binary.Operator.ARR) {
-            // TODO: array value
+            Label arrayLabel = this.frames.valueFor(binary.left).get().label;
+            NameExpr nameExpr = new NameExpr(arrayLabel);
+            BinopExpr pointer = new BinopExpr(nameExpr, (IRExpr) right, BinopExpr.Operator.ADD);
+            MemExpr value = new MemExpr(pointer);
+            this.imcCode.store(value, binary);
         } else {
-            BinopExpr binop = new BinopExpr(left, right, BinopExpr.convertOp(binary.operator));
+            BinopExpr binop = new BinopExpr((IRExpr) left, (IRExpr) right, BinopExpr.convertOp(binary.operator));
             this.imcCode.store(binop, binary);
         }
     }

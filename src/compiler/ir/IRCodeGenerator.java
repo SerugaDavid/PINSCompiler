@@ -8,6 +8,7 @@ package compiler.ir;
 import static common.RequireNonNull.requireNonNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import common.Constants;
@@ -118,8 +119,41 @@ public class IRCodeGenerator implements Visitor {
 
     @Override
     public void visit(For forLoop) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        // labels
+        Frame.Label loopStart = Frame.Label.nextAnonymous();
+        Frame.Label loopEnd = Frame.Label.nextAnonymous();
+        Frame.Label loopBody = Frame.Label.nextAnonymous();
+        LabelStmt loopStartStmt = new LabelStmt(loopStart);
+        LabelStmt loopEndStmt = new LabelStmt(loopEnd);
+        LabelStmt loopBodyStmt = new LabelStmt(loopBody);
+
+        // loop logic
+        forLoop.counter.accept(this);
+        forLoop.low.accept(this);
+        forLoop.high.accept(this);
+        forLoop.step.accept(this);
+        IRExpr counter = (IRExpr) this.imcCode.valueFor(forLoop.counter).get();
+        IRExpr low = (IRExpr) this.imcCode.valueFor(forLoop.low).get();
+        IRExpr high = (IRExpr) this.imcCode.valueFor(forLoop.high).get();
+        IRExpr step = (IRExpr) this.imcCode.valueFor(forLoop.step).get();
+
+        MoveStmt init = new MoveStmt(counter, low);
+        BinopExpr addition = new BinopExpr(counter, step, BinopExpr.Operator.ADD);
+        MoveStmt increment = new MoveStmt(counter, addition);
+        BinopExpr condition = new BinopExpr(counter, high, BinopExpr.Operator.LT);
+        CJumpStmt cjump = new CJumpStmt(condition, loopStart, loopEnd);
+        JumpStmt jump = new JumpStmt(loopBody);
+
+        // assemble with body
+        forLoop.body.accept(this);
+        IRNode body = this.imcCode.valueFor(forLoop.body).get();
+        if (body instanceof IRExpr)
+            body = new ExpStmt((IRExpr) body);
+        List<IRStmt> statements = Arrays.asList(init, loopStartStmt, cjump, loopBodyStmt, (IRStmt) body, increment, jump, loopEndStmt);
+
+        // create SeqStmt
+        SeqStmt seq = new SeqStmt(statements);
+        this.imcCode.store(seq, forLoop);
     }
 
     @Override
@@ -179,8 +213,31 @@ public class IRCodeGenerator implements Visitor {
 
     @Override
     public void visit(While whileLoop) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        // labels
+        Frame.Label loopStart = Frame.Label.nextAnonymous();
+        Frame.Label loopEnd = Frame.Label.nextAnonymous();
+        Frame.Label loopBody = Frame.Label.nextAnonymous();
+        LabelStmt loopStartStmt = new LabelStmt(loopStart);
+        LabelStmt loopEndStmt = new LabelStmt(loopEnd);
+        LabelStmt loopBodyStmt = new LabelStmt(loopBody);
+
+        // loop logic
+        whileLoop.condition.accept(this);
+        IRExpr condition = (IRExpr) this.imcCode.valueFor(whileLoop.condition).get();
+
+        CJumpStmt cjump = new CJumpStmt(condition, loopStart, loopEnd);
+        JumpStmt jump = new JumpStmt(loopBody);
+
+        // assemble with body
+        whileLoop.body.accept(this);
+        IRNode body = this.imcCode.valueFor(whileLoop.body).get();
+        if (body instanceof IRExpr)
+            body = new ExpStmt((IRExpr) body);
+        List<IRStmt> statements = Arrays.asList(loopStartStmt, cjump, loopBodyStmt, (IRStmt) body, jump, loopEndStmt);
+
+        // create SeqStmt
+        SeqStmt seq = new SeqStmt(statements);
+        this.imcCode.store(seq, whileLoop);
     }
 
     @Override

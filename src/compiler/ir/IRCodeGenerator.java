@@ -260,17 +260,20 @@ public class IRCodeGenerator implements Visitor {
     @Override
     public void visit(Literal literal) {
         Atom.Type literalType = literal.type;
-        ConstantExpr value = switch (literalType) {
+        IRExpr value = switch (literalType) {
             case INT -> new ConstantExpr(Integer.parseInt(literal.value));
             case LOG -> new ConstantExpr(literal.value.equals("true") ? 1 : 0);
             case STR -> {
+                Label label = Label.nextAnonymous();
                 Access.Global globalAcces = new Access.Global(
                         literal.value.length() * Constants.WordSize,
-                        Label.nextAnonymous()
+                        label
                 );
                 Chunk.DataChunk string = new Chunk.DataChunk(globalAcces, literal.value);
-                // tle moraš not NAME dat
-                yield new ConstantExpr(/* TODO: tle not mora bit nek pointer */0);
+                this.chunks.add(string);
+
+                // getting pointer to string
+                yield new NameExpr(label);
             }
         };
         this.imcCode.store(value, literal);

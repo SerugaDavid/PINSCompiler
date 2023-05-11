@@ -181,8 +181,27 @@ public class IRCodeGenerator implements Visitor {
 
     @Override
     public void visit(Name name) {
-        // TODO: tle moraš access gledat da pogruntaš al je globalno al je lokalno
-
+        Def definition = this.definitions.valueFor(name).get();
+        Access access = this.accesses.valueFor(definition).get();
+        MemExpr value;
+        if (access instanceof Access.Global) {
+            Access.Global global = (Access.Global) access;
+            NameExpr nameExpr = new NameExpr(global.label);
+            value = new MemExpr(nameExpr);
+        } else if (access instanceof Access.Local) {
+            // TODO: check for static link variables
+            Access.Local local = (Access.Local) access;
+            ConstantExpr offset = new ConstantExpr(local.offset);
+            BinopExpr pointer = new BinopExpr(NameExpr.FP(), offset, BinopExpr.Operator.SUB);
+            value = new MemExpr(pointer);
+        } else {
+            // TODO: check for static link variables
+            Access.Parameter parameter = (Access.Parameter) access;
+            ConstantExpr offset = new ConstantExpr(parameter.offset);
+            BinopExpr pointer = new BinopExpr(NameExpr.FP(), offset, BinopExpr.Operator.ADD);
+            value = new MemExpr(pointer);
+        }
+        this.imcCode.store(value, name);
     }
 
     @Override

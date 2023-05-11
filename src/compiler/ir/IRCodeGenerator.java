@@ -87,14 +87,30 @@ public class IRCodeGenerator implements Visitor {
         BinopExpr pointer = new BinopExpr(NameExpr.SP(), offset, BinopExpr.Operator.SUB);
         MemExpr value = new MemExpr(pointer);
 
-        // move fp to oldFp position and create call
+        // move fp to oldFp position
         MoveStmt move = new MoveStmt(value, NameExpr.FP());
+
+        // get static link
+        Def definition = this.definitions.valueFor(call).get();
+        Frame frame = this.frames.valueFor(definition).get();
+        int staticLevelCall = frame.staticLevel - 1; // TODO: is this correct?
+        int staticLevelCurrent = this.currentFrame.staticLevel;
+        int staticLevelDifference = staticLevelCurrent - staticLevelCall;
+        IRExpr staticLink = NameExpr.FP();
+        for (int i = 0; i < staticLevelDifference; i++) {
+            staticLink = new MemExpr(staticLink);
+        }
+
+        // get arguments
         List<IRExpr> args = new ArrayList<>();
-        args.add(/* TODO: Static link */null);
+        args.add(staticLink);
         for (Expr arg : call.arguments) {
             arg.accept(this);
             args.add((IRExpr) this.imcCode.valueFor(arg).get());
         }
+
+        // create call
+
         CallExpr functionCall = new CallExpr(/* TODO: moramo dobit en label */null, args);
 
         // join moving and calling

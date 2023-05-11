@@ -207,8 +207,15 @@ public class IRCodeGenerator implements Visitor {
 
     @Override
     public void visit(Unary unary) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        unary.expr.accept(this);
+        IRExpr expr = (IRExpr) this.imcCode.valueFor(unary.expr).get();
+        ConstantExpr zero = new ConstantExpr(0);
+        BinopExpr unop = switch (unary.operator) {
+            case ADD -> new BinopExpr(zero, expr, BinopExpr.Operator.ADD);
+            case SUB -> new BinopExpr(zero, expr, BinopExpr.Operator.SUB);
+            case NOT -> new BinopExpr(new ConstantExpr(-1), expr, BinopExpr.Operator.MUL);
+        };
+        this.imcCode.store(unop, unary);
     }
 
     @Override
@@ -242,38 +249,37 @@ public class IRCodeGenerator implements Visitor {
 
     @Override
     public void visit(Where where) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        where.defs.accept(this);
+        where.expr.accept(this);
     }
 
     @Override
     public void visit(Defs defs) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        for (Def def : defs.definitions) {
+            def.accept(this);
+        }
     }
 
     @Override
     public void visit(FunDef funDef) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        // kaj nimam pojama kaj moram tle nardit
+        funDef.body.accept(this);
     }
 
     @Override
     public void visit(TypeDef typeDef) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        // this method is not needed
     }
 
     @Override
     public void visit(VarDef varDef) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        // this method is not needed
     }
 
     @Override
     public void visit(Parameter parameter) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        // this method is not needed
+        // I think
     }
 
     @Override

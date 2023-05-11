@@ -100,7 +100,7 @@ public class FrameEvaluator implements Visitor {
 
     @Override
     public void visit(Name name) {
-        // This method is not needed.
+        // TODO: This method is not needed.
     }
 
 
@@ -115,7 +115,7 @@ public class FrameEvaluator implements Visitor {
 
     @Override
     public void visit(Literal literal) {
-        // This method is not needed.
+        // TODO: This method is not needed.
     }
 
 
@@ -179,7 +179,7 @@ public class FrameEvaluator implements Visitor {
 
     @Override
     public void visit(TypeDef typeDef) {
-        // This method is not needed.
+        // TODO: This method is not needed.
     }
 
 
@@ -210,18 +210,18 @@ public class FrameEvaluator implements Visitor {
 
     @Override
     public void visit(Array array) {
-        // This method is not needed.
+        // TODO: This method is not needed.
     }
 
 
     @Override
     public void visit(Atom atom) {
-        // This method is not needed.
+        // TODO: This method is not needed.
     }
 
 
     @Override
     public void visit(TypeName name) {
-        // This method is not needed.
+        // TODO: This method is not needed.
     }
 }

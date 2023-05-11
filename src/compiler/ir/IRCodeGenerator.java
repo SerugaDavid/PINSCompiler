@@ -56,6 +56,11 @@ public class IRCodeGenerator implements Visitor {
     private final NodeDescription<Type> types;
 
     /**
+     * Trenutni frame
+     */
+    private Frame currentFrame;
+
+    /**
      * **Rezultat generiranja vmesne kode** - seznam fragmentov.
      */
     public List<Chunk> chunks = new ArrayList<>();
@@ -77,16 +82,34 @@ public class IRCodeGenerator implements Visitor {
 
     @Override
     public void visit(Call call) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        // get oldFpPosition
+        ConstantExpr offset = new ConstantExpr(this.currentFrame.oldFPOffset());
+        BinopExpr pointer = new BinopExpr(NameExpr.SP(), offset, BinopExpr.Operator.SUB);
+        MemExpr value = new MemExpr(pointer);
+
+        // move fp to oldFp position and create call
+        MoveStmt move = new MoveStmt(value, NameExpr.FP());
+        List<IRExpr> args = new ArrayList<>();
+        args.add(/* TODO: Static link */null);
+        for (Expr arg : call.arguments) {
+            arg.accept(this);
+            args.add((IRExpr) this.imcCode.valueFor(arg).get());
+        }
+        CallExpr functionCall = new CallExpr(/* TODO: moramo dobit en label */null, args);
+
+        // join moving and calling
+        EseqExpr fullCall = new EseqExpr(move, functionCall);
     }
 
     @Override
     public void visit(Binary binary) {
+        // get nodes
         binary.left.accept(this);
         binary.right.accept(this);
         IRNode left = this.imcCode.valueFor(binary.left).get();
         IRNode right = this.imcCode.valueFor(binary.right).get();
+
+        // check operators and store
         if (binary.operator == Binary.Operator.ASSIGN) {
             MoveStmt move = new MoveStmt((IRExpr) left, (IRExpr) right);
             this.imcCode.store(move, binary);
@@ -158,8 +181,8 @@ public class IRCodeGenerator implements Visitor {
 
     @Override
     public void visit(Name name) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        // TODO: tle moraš access gledat da pogruntaš al je globalno al je lokalno
+
     }
 
     @Override
@@ -201,8 +224,21 @@ public class IRCodeGenerator implements Visitor {
 
     @Override
     public void visit(Literal literal) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        Atom.Type literalType = literal.type;
+        ConstantExpr value = switch (literalType) {
+            case INT -> new ConstantExpr(Integer.parseInt(literal.value));
+            case LOG -> new ConstantExpr(literal.value.equals("true") ? 1 : 0);
+            case STR -> {
+                Access.Global globalAcces = new Access.Global(
+                        literal.value.length() * Constants.WordSize,
+                        Label.nextAnonymous()
+                );
+                Chunk.DataChunk string = new Chunk.DataChunk(globalAcces, literal.value);
+                // tle moraš not NAME dat
+                yield new ConstantExpr(/* TODO: tle not mora bit nek pointer */0);
+            }
+        };
+        this.imcCode.store(value, literal);
     }
 
     @Override
@@ -213,7 +249,7 @@ public class IRCodeGenerator implements Visitor {
         BinopExpr unop = switch (unary.operator) {
             case ADD -> new BinopExpr(zero, expr, BinopExpr.Operator.ADD);
             case SUB -> new BinopExpr(zero, expr, BinopExpr.Operator.SUB);
-            case NOT -> new BinopExpr(new ConstantExpr(-1), expr, BinopExpr.Operator.MUL);
+            case NOT -> new BinopExpr(new ConstantExpr(1), expr, BinopExpr.Operator.SUB);
         };
         this.imcCode.store(unop, unary);
     }
@@ -251,6 +287,8 @@ public class IRCodeGenerator implements Visitor {
     public void visit(Where where) {
         where.defs.accept(this);
         where.expr.accept(this);
+        IRNode value = this.imcCode.valueFor(where.expr).get();
+        this.imcCode.store(value, where);
     }
 
     @Override
@@ -262,8 +300,30 @@ public class IRCodeGenerator implements Visitor {
 
     @Override
     public void visit(FunDef funDef) {
-        // kaj nimam pojama kaj moram tle nardit
+        // switch frame
+        Frame prev = this.currentFrame;
+        this.currentFrame = this.frames.valueFor(funDef).get();
+
+        // visit body; TODO: A rabimo sploh kej delat z argumenti
         funDef.body.accept(this);
+        IRNode body = this.imcCode.valueFor(funDef.body).get();
+
+        // move(return value placement, koda funckije)
+        IRExpr returnValue;
+        if (body instanceof IRExpr)
+            returnValue = (IRExpr) body;
+        else
+            returnValue = new EseqExpr((IRStmt) body, new ConstantExpr(0));
+
+        MemExpr location = new MemExpr(NameExpr.FP());
+        MoveStmt saveReturn = new MoveStmt(location, returnValue);
+
+        // create code chunk
+        Chunk.CodeChunk code = new Chunk.CodeChunk(this.currentFrame, saveReturn);
+        this.chunks.add(code);
+
+        // reset frame
+        this.currentFrame = prev;
     }
 
     @Override
@@ -273,13 +333,16 @@ public class IRCodeGenerator implements Visitor {
 
     @Override
     public void visit(VarDef varDef) {
-        // this method is not needed
+        Access access = this.accesses.valueFor(varDef).get();
+        if (access instanceof Access.Global) {
+            Chunk.GlobalChunk globalChunk = new Chunk.GlobalChunk((Access.Global) access);
+            this.chunks.add(globalChunk);
+        }
     }
 
     @Override
     public void visit(Parameter parameter) {
         // this method is not needed
-        // I think
     }
 
     @Override

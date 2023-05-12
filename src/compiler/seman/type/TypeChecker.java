@@ -37,10 +37,72 @@ public class TypeChecker implements Visitor {
         this.types = types;
     }
 
+    private boolean isSTDLIB(String name) {
+        return name.equals("print_int") || name.equals("print_str") || name.equals("print_log") || name.equals("rand_int") || name.equals("seed");
+    }
+
     @Override
     public void visit(Call call) {
         // get definition and function type
         Optional<Def> def = this.definitions.valueFor(call);
+
+        // check for stdlib
+        if (def.isEmpty() && isSTDLIB(call.name)) {
+            Type.Atom typeInt = new Type.Atom(Type.Atom.Kind.INT);
+            Type.Atom typeStr = new Type.Atom(Type.Atom.Kind.STR);
+            Type.Atom typeLog = new Type.Atom(Type.Atom.Kind.LOG);
+
+
+            // check if types match
+            int argumentCount = call.arguments.size();
+            if (call.name.equals("rand_int")) { // rand_int has 2 arguments
+                Expr argument1 = call.arguments.get(0);
+                Expr argument2 = call.arguments.get(1);
+                argument1.accept(this);
+                argument2.accept(this);
+                Optional<Type> argumentType1 = this.types.valueFor(argument1);
+                Optional<Type> argumentType2 = this.types.valueFor(argument2);
+
+                if (argumentType1.isEmpty())
+                    Report.error(argument1.position, "No type found for argument at position: " + argument1.position);
+                if (argumentType2.isEmpty())
+                    Report.error(argument2.position, "No type found for argument at position: " + argument2.position);
+
+                if (!argumentType1.get().equals(typeInt))
+                    Report.error(argument1.position, "Argument type doesn't match parameter type. Called at position: " + call.position);
+                if (!argumentType2.get().equals(typeInt))
+                    Report.error(argument2.position, "Argument type doesn't match parameter type. Called at position: " + call.position);
+
+                this.types.store(typeInt, call);
+                return;
+            } else { // other stdlib functions have 1 argument
+                Expr argument = call.arguments.get(0);
+                argument.accept(this);
+                Optional<Type> argumentType = this.types.valueFor(argument);
+
+                if (argumentType.isEmpty())
+                    Report.error(argument.position, "No type found for argument at position: " + argument.position);
+
+                switch (call.name) {
+                    case "print_int", "seed" -> {
+                        if (!argumentType.get().equals(typeInt))
+                            Report.error(argument.position, "Argument type doesn't match parameter type. Called at position: " + call.position);
+                    }
+                    case "print_str" -> {
+                        if (!argumentType.get().equals(typeStr))
+                            Report.error(argument.position, "Argument type doesn't match parameter type. Called at position: " + call.position);
+                    }
+                    case "print_log" -> {
+                        if (!argumentType.get().equals(typeLog))
+                            Report.error(argument.position, "Argument type doesn't match parameter type. Called at position: " + call.position);
+                    }
+                }
+
+                this.types.store(typeInt, call);
+                return;
+            }
+        }
+
         def.get().accept(this);
         Optional<Type> functionType = this.types.valueFor(def.get());
         // check if definition exists

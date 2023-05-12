@@ -82,6 +82,21 @@ public class IRCodeGenerator implements Visitor {
 
     @Override
     public void visit(Call call) {
+        Frame frame;
+        // check stdlib
+        // get frame
+        if (this.definitions.valueFor(call).isPresent()) {
+            Def definition = this.definitions.valueFor(call).get();
+            frame = this.frames.valueFor(definition).get();
+        } else {
+            Frame.Builder builder = new Frame.Builder(Label.nextAnonymous(), 0);
+            for (Expr arg : call.arguments) {
+                builder.addParameter(Constants.WordSize);
+            }
+            frame = builder.build();
+        }
+
+
         // get oldFpPosition
         ConstantExpr offset = new ConstantExpr(frame.oldFPOffset());
         BinopExpr pointer = new BinopExpr(NameExpr.SP(), offset, BinopExpr.Operator.SUB);
@@ -91,8 +106,6 @@ public class IRCodeGenerator implements Visitor {
         MoveStmt move = new MoveStmt(value, NameExpr.FP());
 
         // get static link
-        Def definition = this.definitions.valueFor(call).get();
-        Frame frame = this.frames.valueFor(definition).get();
         int staticLevelCall = frame.staticLevel - 1; // TODO: is this correct?
         int staticLevelCurrent = this.currentFrame.staticLevel;
         int staticLevelDifference = staticLevelCurrent - staticLevelCall;

@@ -45,6 +45,10 @@ public class NameChecker implements Visitor {
         this.symbolTable = symbolTable;
     }
 
+    private boolean isSTDLIB(String name) {
+        return name.equals("print_int") || name.equals("print_str") || name.equals("print_log") || name.equals("rand_int") || name.equals("seed");
+    }
+
     @Override
     public void visit(Call call) {
         /**
@@ -54,6 +58,12 @@ public class NameChecker implements Visitor {
 
         Optional<Def> opDef = this.symbolTable.definitionFor(call.name);
         if (opDef.isEmpty()) {
+            if (this.isSTDLIB(call.name)) {
+                for (Expr expr : call.arguments) {
+                    expr.accept(this);
+                }
+                return;
+            }
             Report.error(call.position, "Function " + call.name + " is not defined. Called at: " + call.position);
         }
         Def def = opDef.get();

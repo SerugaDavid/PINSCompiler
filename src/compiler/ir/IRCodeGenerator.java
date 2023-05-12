@@ -115,6 +115,9 @@ public class IRCodeGenerator implements Visitor {
 
         // join moving and calling
         EseqExpr fullCall = new EseqExpr(move, functionCall);
+
+        // store call
+        this.imcCode.store(fullCall, call);
     }
 
     @Override
@@ -125,14 +128,19 @@ public class IRCodeGenerator implements Visitor {
         IRNode left = this.imcCode.valueFor(binary.left).get();
         IRNode right = this.imcCode.valueFor(binary.right).get();
 
+        // convert statements to expressions
+        if (left instanceof IRStmt)
+            left = new EseqExpr((IRStmt) left, new ConstantExpr(0));
+        if (right instanceof IRStmt)
+            right = new EseqExpr((IRStmt) right, new ConstantExpr(0));
+
         // check operators and store
         if (binary.operator == Binary.Operator.ASSIGN) {
             MoveStmt move = new MoveStmt((IRExpr) left, (IRExpr) right);
             this.imcCode.store(move, binary);
         } else if (binary.operator == Binary.Operator.ARR) {
-            Label arrayLabel = this.frames.valueFor(binary.left).get().label;
-            NameExpr nameExpr = new NameExpr(arrayLabel);
-            BinopExpr pointer = new BinopExpr(nameExpr, (IRExpr) right, BinopExpr.Operator.ADD);
+            BinopExpr offset = new BinopExpr((IRExpr) right, new ConstantExpr(Constants.WordSize), BinopExpr.Operator.MUL);
+            BinopExpr pointer = new BinopExpr((IRExpr) left, offset, BinopExpr.Operator.ADD);
             MemExpr value = new MemExpr(pointer);
             this.imcCode.store(value, binary);
         } else {
@@ -171,15 +179,23 @@ public class IRCodeGenerator implements Visitor {
         forLoop.low.accept(this);
         forLoop.high.accept(this);
         forLoop.step.accept(this);
-        IRExpr counter = (IRExpr) this.imcCode.valueFor(forLoop.counter).get();
-        IRExpr low = (IRExpr) this.imcCode.valueFor(forLoop.low).get();
-        IRExpr high = (IRExpr) this.imcCode.valueFor(forLoop.high).get();
-        IRExpr step = (IRExpr) this.imcCode.valueFor(forLoop.step).get();
+        IRNode counter = this.imcCode.valueFor(forLoop.counter).get();
+        if (counter instanceof IRStmt)
+            counter = new EseqExpr((IRStmt) counter, new ConstantExpr(0));
+        IRNode low = this.imcCode.valueFor(forLoop.low).get();
+        if (low instanceof IRStmt)
+            low = new EseqExpr((IRStmt) low, new ConstantExpr(0));
+        IRNode high = this.imcCode.valueFor(forLoop.high).get();
+        if (high instanceof IRStmt)
+            high = new EseqExpr((IRStmt) high, new ConstantExpr(0));
+        IRNode step = this.imcCode.valueFor(forLoop.step).get();
+        if (step instanceof IRStmt)
+            step = new EseqExpr((IRStmt) step, new ConstantExpr(0));
 
-        MoveStmt init = new MoveStmt(counter, low);
-        BinopExpr addition = new BinopExpr(counter, step, BinopExpr.Operator.ADD);
-        MoveStmt increment = new MoveStmt(counter, addition);
-        BinopExpr condition = new BinopExpr(counter, high, BinopExpr.Operator.LT);
+        MoveStmt init = new MoveStmt((IRExpr) counter, (IRExpr) low);
+        BinopExpr addition = new BinopExpr((IRExpr) counter, (IRExpr) step, BinopExpr.Operator.ADD);
+        MoveStmt increment = new MoveStmt((IRExpr) counter, addition);
+        BinopExpr condition = new BinopExpr((IRExpr) counter, (IRExpr) high, BinopExpr.Operator.LT);
         CJumpStmt cjump = new CJumpStmt(condition, loopStart, loopEnd);
         JumpStmt jump = new JumpStmt(loopBody);
 
@@ -296,12 +312,14 @@ public class IRCodeGenerator implements Visitor {
     @Override
     public void visit(Unary unary) {
         unary.expr.accept(this);
-        IRExpr expr = (IRExpr) this.imcCode.valueFor(unary.expr).get();
+        IRNode expr = this.imcCode.valueFor(unary.expr).get();
+        if (expr instanceof IRStmt)
+            expr = new EseqExpr((IRStmt) expr, new ConstantExpr(0));
         ConstantExpr zero = new ConstantExpr(0);
         BinopExpr unop = switch (unary.operator) {
-            case ADD -> new BinopExpr(zero, expr, BinopExpr.Operator.ADD);
-            case SUB -> new BinopExpr(zero, expr, BinopExpr.Operator.SUB);
-            case NOT -> new BinopExpr(new ConstantExpr(1), expr, BinopExpr.Operator.SUB);
+            case ADD -> new BinopExpr(zero, (IRExpr) expr, BinopExpr.Operator.ADD);
+            case SUB -> new BinopExpr(zero, (IRExpr) expr, BinopExpr.Operator.SUB);
+            case NOT -> new BinopExpr(new ConstantExpr(1), (IRExpr) expr, BinopExpr.Operator.SUB);
         };
         this.imcCode.store(unop, unary);
     }

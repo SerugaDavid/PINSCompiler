@@ -20,8 +20,8 @@ fun firstfunction(x: integer, y: string, z: logical): integer =
 	( {for i = 1, 100, {i = i + 1}:
 		{
 			while j > (-10): {
-				if j * (-10) + 20 + 30 + 10 - 40 / 50 % 100 -(-(-(-(-(+10))))) != 123 then
-				    12
+				if j * (-10) + 20 + l + 10 - 40 / 50 % l -(-(-(-(-(+10))))) != 123 then
+				    l
 				else
 					firstfunction(123, 'bruh', true)
 			}
@@ -46,9 +46,14 @@ fun firstfunction(x: integer, y: string, z: logical): integer =
                 for j = 1, 12, {j=j*2}: firstfunction(12, 'blablabla', true)
             },
 			{
-                p[i+10-20*30][j-10-203] = 12
+                p[i+10-20*30][j-10-203] = l
             })
 		},
+		print_int(12),
+		print_str('hehe'),
+		print_log(true),
+		seed(123),
+		print_int(rand_int(1,2)),
         12
 	)
 { where
@@ -89,7 +94,7 @@ fun firstfunction(x: integer, y: string, z: logical): integer =
             {swapTemp = stevila[i+1]},
             {stevila[i+1] = stevila[end]},
             {stevila[end] = swapTemp},
-            (i + 1)
+            (i + l)
         )
         { where
             var swapTemp: integer;

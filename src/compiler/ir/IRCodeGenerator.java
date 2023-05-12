@@ -204,17 +204,31 @@ public class IRCodeGenerator implements Visitor {
             Access.Global global = (Access.Global) access;
             NameExpr nameExpr = new NameExpr(global.label);
             value = new MemExpr(nameExpr);
-        } else if (access instanceof Access.Local) {
-            // TODO: check for static link variables
-            Access.Local local = (Access.Local) access;
-            ConstantExpr offset = new ConstantExpr(local.offset);
-            BinopExpr pointer = new BinopExpr(NameExpr.FP(), offset, BinopExpr.Operator.SUB);
-            value = new MemExpr(pointer);
         } else {
-            // TODO: check for static link variables
-            Access.Parameter parameter = (Access.Parameter) access;
-            ConstantExpr offset = new ConstantExpr(parameter.offset);
-            BinopExpr pointer = new BinopExpr(NameExpr.FP(), offset, BinopExpr.Operator.ADD);
+            // needed variables
+            ConstantExpr offset;
+            int variableLevel;
+
+            // get offset and variable level
+            if (access instanceof Access.Local) {
+                Access.Local local = (Access.Local) access;
+                offset = new ConstantExpr(local.offset);
+                variableLevel = local.staticLevel;
+            } else {
+                Access.Parameter parameter = (Access.Parameter) access;
+                offset = new ConstantExpr(parameter.offset);
+                variableLevel = parameter.staticLevel;
+            }
+
+            // get correct frame pointer
+            int currentLevel = this.currentFrame.staticLevel;
+            int levelDifference = currentLevel - variableLevel;
+            IRExpr framePointer = NameExpr.FP();
+            for (int i = 0; i < levelDifference; i++)
+                framePointer = new MemExpr(framePointer);
+
+            // get variable
+            BinopExpr pointer = new BinopExpr(framePointer, offset, BinopExpr.Operator.SUB);
             value = new MemExpr(pointer);
         }
         this.imcCode.store(value, name);

@@ -83,7 +83,7 @@ public class IRCodeGenerator implements Visitor {
     @Override
     public void visit(Call call) {
         // get oldFpPosition
-        ConstantExpr offset = new ConstantExpr(this.currentFrame.oldFPOffset());
+        ConstantExpr offset = new ConstantExpr(frame.oldFPOffset());
         BinopExpr pointer = new BinopExpr(NameExpr.SP(), offset, BinopExpr.Operator.SUB);
         MemExpr value = new MemExpr(pointer);
 

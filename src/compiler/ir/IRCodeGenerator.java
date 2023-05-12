@@ -110,8 +110,8 @@ public class IRCodeGenerator implements Visitor {
         }
 
         // create call
-
-        CallExpr functionCall = new CallExpr(/* TODO: moramo dobit en label */null, args);
+        Label functionLabel = frame.label;
+        CallExpr functionCall = new CallExpr(functionLabel, args);
 
         // join moving and calling
         EseqExpr fullCall = new EseqExpr(move, functionCall);

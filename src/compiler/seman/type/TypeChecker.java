@@ -87,18 +87,20 @@ public class TypeChecker implements Visitor {
                     case "print_int", "seed" -> {
                         if (!argumentType.get().equals(typeInt))
                             Report.error(argument.position, "Argument type doesn't match parameter type. Called at position: " + call.position);
+                        this.types.store(typeInt, call);
                     }
                     case "print_str" -> {
                         if (!argumentType.get().equals(typeStr))
                             Report.error(argument.position, "Argument type doesn't match parameter type. Called at position: " + call.position);
+                        this.types.store(typeStr, call);
                     }
                     case "print_log" -> {
                         if (!argumentType.get().equals(typeLog))
                             Report.error(argument.position, "Argument type doesn't match parameter type. Called at position: " + call.position);
+                        this.types.store(typeLog, call);
                     }
                 }
 
-                this.types.store(typeInt, call);
                 return;
             }
         }

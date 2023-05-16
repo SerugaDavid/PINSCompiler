@@ -68,6 +68,8 @@ public class Interpreter {
 
     private void internalInterpret(CodeChunk chunk) {
         // @TODO: Nastavi FP in SP na nove vrednosti!
+        this.framePointer = this.stackPointer;
+        this.stackPointer -= chunk.frame.size();
         
         Object result = null;
         if (chunk.code instanceof SeqStmt seq) {
@@ -88,6 +90,8 @@ public class Interpreter {
         }
 
         // @TODO: Ponastavi FP in SP na stare vrednosti!
+        this.stackPointer = this.framePointer;
+        this.framePointer = (int) memory.ldM(framePointer - chunk.frame.oldFPOffset());
     }
 
     private Object execute(IRStmt stmt) {
@@ -107,18 +111,21 @@ public class Interpreter {
     }
 
     private Object execute(CJumpStmt cjump) {
+        // TODO: Implement
         throw new UnsupportedOperationException("Unimplemented method 'execute'");
     }
 
     private Object execute(ExpStmt exp) {
-        throw new UnsupportedOperationException("Unimplemented method 'execute'");
+        return execute(exp.expr);
     }
 
     private Object execute(JumpStmt jump) {
+        // TODO: Implement
         throw new UnsupportedOperationException("Unimplemented method 'execute'");
     }
 
     private Object execute(MoveStmt move) {
+        // TODO: Implement
         throw new UnsupportedOperationException("Unimplemented method 'execute'");
     }
 
@@ -143,6 +150,7 @@ public class Interpreter {
     }
 
     private Object execute(BinopExpr binop) {
+        // TODO: Implement
         throw new UnsupportedOperationException("Unimplemented method 'execute'");
     }
 
@@ -174,6 +182,7 @@ public class Interpreter {
             random = new Random(seed);
             return 0;
         } else if (memory.ldM(call.label) instanceof CodeChunk chunk) {
+            // TODO: Implement
             throw new UnsupportedOperationException("Unimplemented method 'execute'");
         } else {
             throw new RuntimeException("Only functions can be called!");
@@ -181,18 +190,22 @@ public class Interpreter {
     }
 
     private Object execute(ConstantExpr constant) {
+        // TODO: Implement
         throw new UnsupportedOperationException("Unimplemented method 'execute'");
     }
 
     private Object execute(MemExpr mem) {
+        // TODO: Implement
         throw new UnsupportedOperationException("Unimplemented method 'execute'");
     }
 
     private Object execute(NameExpr name) {
+        // TODO: Implement
         throw new UnsupportedOperationException("Unimplemented method 'execute'");
     }
 
     private Object execute(TempExpr temp) {
+        // TODO: Implement
         throw new UnsupportedOperationException("Unimplemented method 'execute'");
     }
 

@@ -271,8 +271,10 @@ public class IRCodeGenerator implements Visitor {
         // labels
         Frame.Label trueLabel = Frame.Label.nextAnonymous();
         Frame.Label falseLabel = Frame.Label.nextAnonymous();
+        Frame.Label endLabel = Frame.Label.nextAnonymous();
         LabelStmt trueLabelStmt = new LabelStmt(trueLabel);
         LabelStmt falseLabelStmt = new LabelStmt(falseLabel);
+        LabelStmt endLabelStmt = new LabelStmt(endLabel);
 
         // condition
         ifThenElse.condition.accept(this);
@@ -289,6 +291,7 @@ public class IRCodeGenerator implements Visitor {
         if (tmp instanceof IRExpr)
             tmp = new ExpStmt((IRExpr) tmp);
         statements.add((IRStmt) tmp);
+        statements.add(new JumpStmt(endLabel));
         statements.add(falseLabelStmt);
         if (ifThenElse.elseExpression.isPresent()) {
             ifThenElse.elseExpression.get().accept(this);
@@ -297,6 +300,7 @@ public class IRCodeGenerator implements Visitor {
                 tmp = new ExpStmt((IRExpr) tmp);
             statements.add((IRStmt) tmp);
         }
+        statements.add(endLabelStmt);
 
         // create SeqStmt
         SeqStmt seq = new SeqStmt(statements);

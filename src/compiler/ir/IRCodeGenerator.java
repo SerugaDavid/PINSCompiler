@@ -89,7 +89,7 @@ public class IRCodeGenerator implements Visitor {
             Def definition = this.definitions.valueFor(call).get();
             frame = this.frames.valueFor(definition).get();
         } else {
-            Frame.Builder builder = new Frame.Builder(Label.nextAnonymous(), 0);
+            Frame.Builder builder = new Frame.Builder(Label.named(call.name), 1);
             for (Expr arg : call.arguments) {
                 builder.addParameter(Constants.WordSize);
             }
@@ -116,7 +116,10 @@ public class IRCodeGenerator implements Visitor {
 
         // get arguments
         List<IRExpr> args = new ArrayList<>();
-        args.add(staticLink);
+        if (staticLevelCall == 0)
+            args.add(new ConstantExpr(0));
+        else
+            args.add(staticLink);
         for (Expr arg : call.arguments) {
             arg.accept(this);
             args.add((IRExpr) this.imcCode.valueFor(arg).get());

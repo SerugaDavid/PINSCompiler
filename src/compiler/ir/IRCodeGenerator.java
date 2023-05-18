@@ -212,7 +212,7 @@ public class IRCodeGenerator implements Visitor {
         BinopExpr addition = new BinopExpr((IRExpr) counter, (IRExpr) step, BinopExpr.Operator.ADD);
         MoveStmt increment = new MoveStmt((IRExpr) counter, addition);
         BinopExpr condition = new BinopExpr((IRExpr) counter, (IRExpr) high, BinopExpr.Operator.LT);
-        CJumpStmt cjump = new CJumpStmt(condition, loopStart, loopEnd);
+        CJumpStmt cjump = new CJumpStmt(condition, loopBody, loopEnd);
         JumpStmt jump = new JumpStmt(loopBody);
 
         // assemble with body
@@ -260,7 +260,7 @@ public class IRCodeGenerator implements Visitor {
                 framePointer = new MemExpr(framePointer);
 
             // get variable
-            BinopExpr pointer = new BinopExpr(framePointer, offset, BinopExpr.Operator.SUB);
+            BinopExpr pointer = new BinopExpr(framePointer, offset, BinopExpr.Operator.ADD);
             value = new MemExpr(pointer);
         }
         this.imcCode.store(value, name);

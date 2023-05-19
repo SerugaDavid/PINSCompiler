@@ -129,8 +129,7 @@ public class Interpreter {
     }
 
     private Object execute(JumpStmt jump) {
-        // TODO: Implement
-        throw new UnsupportedOperationException("Unimplemented method 'execute'");
+        return jump.label;
     }
 
     private Object execute(MoveStmt move) {

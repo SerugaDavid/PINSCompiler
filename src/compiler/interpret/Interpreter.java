@@ -231,8 +231,10 @@ public class Interpreter {
             random = new Random(seed);
             return 0;
         } else if (memory.ldM(call.label) instanceof CodeChunk chunk) {
-            // TODO: Implement
-            throw new UnsupportedOperationException("Unimplemented method 'execute'");
+            // TODO: tle moraš pogruntat, nek return value
+            // TODO: kak ga dobit in kako ga vrnit
+            // TODO: ?????????????????????????????????????
+            return internalInterpret(chunk);
         } else {
             throw new RuntimeException("Only functions can be called!");
         }

@@ -243,19 +243,36 @@ public class Interpreter {
         throw new UnsupportedOperationException("Unimplemented method 'execute'");
     }
 
-    private Object execute(MemExpr mem) {
-        // TODO: Implement
-        throw new UnsupportedOperationException("Unimplemented method 'execute'");
+    private AddressValuePair execute(MemExpr mem) {
+        // TODO: tle bo treba porapvt za assign
+        Object pointer = execute(mem.expr);
+        if (pointer instanceof Frame.Label label) {
+            Object value = this.memory.ldM(label);
+            return new AddressValuePair(-1, value);
+        }
+        if (pointer instanceof Integer address) {
+            Object value;
+            try {
+                value = this.memory.ldM(address);
+            } catch (IllegalArgumentException e) {
+                value = null;
+            }
+            return new AddressValuePair(address, value);
+        }
+        throw new RuntimeException("Cannot execute MEM with this address!");
     }
 
     private Object execute(NameExpr name) {
-        // TODO: Implement
-        throw new UnsupportedOperationException("Unimplemented method 'execute'");
+        Frame.Label value = name.label;
+        if (value.name.equals(Constants.framePointer))
+            return this.framePointer;
+        if (value.name.equals(Constants.stackPointer))
+            return this.stackPointer;
+        return value;
     }
 
     private Object execute(TempExpr temp) {
-        // TODO: Implement
-        throw new UnsupportedOperationException("Unimplemented method 'execute'");
+        return temp.temp;
     }
 
     // ----------- pomožne funkcije -----------

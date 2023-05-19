@@ -239,8 +239,7 @@ public class Interpreter {
     }
 
     private Object execute(ConstantExpr constant) {
-        // TODO: Implement
-        throw new UnsupportedOperationException("Unimplemented method 'execute'");
+        return constant.constant;
     }
 
     private AddressValuePair execute(MemExpr mem) {

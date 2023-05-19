@@ -118,8 +118,10 @@ public class Interpreter {
     }
 
     private Object execute(CJumpStmt cjump) {
-        // TODO: Implement
-        throw new UnsupportedOperationException("Unimplemented method 'execute'");
+        boolean condition = (boolean) execute(cjump.condition);
+        if (condition)
+            return cjump.thenLabel;
+        return cjump.elseLabel;
     }
 
     private Object execute(ExpStmt exp) {

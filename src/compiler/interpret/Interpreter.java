@@ -133,8 +133,21 @@ public class Interpreter {
     }
 
     private Object execute(MoveStmt move) {
-        // TODO: Implement
-        throw new UnsupportedOperationException("Unimplemented method 'execute'");
+        Object src = execute(move.src);
+        if (src instanceof AddressValuePair addressValuePair)
+            src = addressValuePair.address;
+
+        if (move.dst instanceof MemExpr memExpr) {
+            AddressValuePair dst = execute(memExpr);
+            memory.stM(dst.address, src);
+        } else if (move.dst instanceof TempExpr tempExpr) {
+            Frame.Temp dst = (Frame.Temp) execute(tempExpr);
+            memory.stT(dst, src);
+        } else {
+            throw new RuntimeException("Cannot execute MOVE to this destination!");
+        }
+
+        return src;
     }
 
     private Object execute(IRExpr expr) {

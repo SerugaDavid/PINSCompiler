@@ -78,7 +78,7 @@ public class Interpreter {
         if (chunk.code instanceof SeqStmt seq) {
             for (int pc = 0; pc < seq.statements.size(); pc++) {
                 var stmt = seq.statements.get(pc);
-                result = execute(stmt);
+                result = execute(stmt, false);
                 if (result instanceof Frame.Label label) {
                     for (int q = 0; q < seq.statements.size(); q++) {
                         if (seq.statements.get(q) instanceof LabelStmt labelStmt && labelStmt.label.equals(label)) {
@@ -101,47 +101,45 @@ public class Interpreter {
         return result;
     }
 
-    private Object execute(IRStmt stmt) {
+    private Object execute(IRStmt stmt, boolean isAssign) {
         if (stmt instanceof CJumpStmt cjump) {
-            return execute(cjump);
+            return execute(cjump, isAssign);
         } else if (stmt instanceof ExpStmt exp) {
-            return execute(exp);
+            return execute(exp, isAssign);
         } else if (stmt instanceof JumpStmt jump) {
-            return execute(jump);
+            return execute(jump, isAssign);
         } else if (stmt instanceof LabelStmt label) {
             return null;
         } else if (stmt instanceof MoveStmt move) {
-            return execute(move);
+            return execute(move, isAssign);
         } else {
             throw new RuntimeException("Cannot execute this statement!");
         }
     }
 
-    private Object execute(CJumpStmt cjump) {
-        boolean condition = (boolean) execute(cjump.condition);
+    private Object execute(CJumpStmt cjump, boolean isAssign) {
+        boolean condition = (boolean) execute(cjump.condition, isAssign);
         if (condition)
             return cjump.thenLabel;
         return cjump.elseLabel;
     }
 
-    private Object execute(ExpStmt exp) {
-        return execute(exp.expr);
+    private Object execute(ExpStmt exp, boolean isAssign) {
+        return execute(exp.expr, isAssign);
     }
 
-    private Object execute(JumpStmt jump) {
+    private Object execute(JumpStmt jump, boolean isAssign) {
         return jump.label;
     }
 
-    private Object execute(MoveStmt move) {
-        Object src = execute(move.src);
-        if (src instanceof AddressValuePair addressValuePair)
-            src = addressValuePair.address;
+    private Object execute(MoveStmt move, boolean isAssign) {
+        Object src = execute(move.src, false);
 
         if (move.dst instanceof MemExpr memExpr) {
-            AddressValuePair dst = execute(memExpr);
-            memory.stM(dst.address, src);
+            Object dst = execute(memExpr, true);
+            memory.stM(toInt(dst), src);
         } else if (move.dst instanceof TempExpr tempExpr) {
-            Frame.Temp dst = (Frame.Temp) execute(tempExpr);
+            Frame.Temp dst = (Frame.Temp) execute(tempExpr, true);
             memory.stT(dst, src);
         } else {
             throw new RuntimeException("Cannot execute MOVE to this destination!");
@@ -150,38 +148,30 @@ public class Interpreter {
         return src;
     }
 
-    private Object execute(IRExpr expr) {
+    private Object execute(IRExpr expr, boolean isAssign) {
         if (expr instanceof BinopExpr binopExpr) {
-            return execute(binopExpr);
+            return execute(binopExpr, isAssign);
         } else if (expr instanceof CallExpr callExpr) {
-            return execute(callExpr);
+            return execute(callExpr, isAssign);
         } else if (expr instanceof ConstantExpr constantExpr) {
-            return execute(constantExpr);
+            return execute(constantExpr, isAssign);
         } else if (expr instanceof EseqExpr eseqExpr) {
             throw new RuntimeException("Cannot execute ESEQ; linearize code!");
         } else if (expr instanceof MemExpr memExpr) {
-            return execute(memExpr);
+            return execute(memExpr, isAssign);
         } else if (expr instanceof NameExpr nameExpr) {
-            return execute(nameExpr);
+            return execute(nameExpr, isAssign);
         } else if (expr instanceof TempExpr tempExpr) {
-            return execute(tempExpr);
+            return execute(tempExpr, isAssign);
         } else {
             throw new IllegalArgumentException("Unknown expr type");
         }
     }
 
-    private Object execute(BinopExpr binop) {
-        Object left = execute(binop.lhs);
-        if (left instanceof AddressValuePair addressValuePair) {
-            /* TODO here we have a problem
-                    maybe we need an address or a value
-             */
-            left = addressValuePair.value == null ? addressValuePair.address : addressValuePair.value;
-        }
+    private Object execute(BinopExpr binop, boolean isAssign) {
+        Object left = execute(binop.lhs, isAssign);
 
-        Object right = execute(binop.rhs);
-        if (right instanceof AddressValuePair addressValuePair)
-            right = addressValuePair.value;
+        Object right = execute(binop.rhs, false/* Maybe false */);
 
         return switch (binop.op) {
             // logical operators
@@ -203,31 +193,31 @@ public class Interpreter {
         };
     }
 
-    private Object execute(CallExpr call) {
+    private Object execute(CallExpr call, boolean isAssign) {
         if (call.label.name.equals(Constants.printIntLabel)) {
             if (call.args.size() != 2) { throw new RuntimeException("Invalid argument count!"); }
-            var arg = execute(call.args.get(1));
+            var arg = execute(call.args.get(1), false);
             outputStream.ifPresent(stream -> stream.println(arg));
             return 0;
         } else if (call.label.name.equals(Constants.printStringLabel)) {
             if (call.args.size() != 2) { throw new RuntimeException("Invalid argument count!"); }
-            var address = execute(call.args.get(1));
+            var address = execute(call.args.get(1), false);
             var res = memory.ldM(toInt(address));
             outputStream.ifPresent(stream -> stream.println("\""+res+"\""));
             return 0;
         } else if (call.label.name.equals(Constants.printLogLabel)) {
             if (call.args.size() != 2) { throw new RuntimeException("Invalid argument count!"); }
-            var arg = execute(call.args.get(1));
+            var arg = execute(call.args.get(1), false);
             outputStream.ifPresent(stream -> stream.println(toBool(arg)));
             return 0;
         } else if (call.label.name.equals(Constants.randIntLabel)) {
             if (call.args.size() != 3) { throw new RuntimeException("Invalid argument count!"); }
-            var min = toInt(execute(call.args.get(1)));
-            var max = toInt(execute(call.args.get(2)));
+            var min = toInt(execute(call.args.get(1), false));
+            var max = toInt(execute(call.args.get(2), false));
             return random.nextInt(min, max);
         } else if (call.label.name.equals(Constants.seedLabel)) {
             if (call.args.size() != 2) { throw new RuntimeException("Invalid argument count!"); }
-            var seed = toInt(execute(call.args.get(1)));
+            var seed = toInt(execute(call.args.get(1), false));
             random = new Random(seed);
             return 0;
         } else if (memory.ldM(call.label) instanceof CodeChunk chunk) {
@@ -240,30 +230,40 @@ public class Interpreter {
         }
     }
 
-    private Object execute(ConstantExpr constant) {
+    private Object execute(ConstantExpr constant, boolean isAssign) {
         return constant.constant;
     }
 
-    private AddressValuePair execute(MemExpr mem) {
-        // TODO: tle bo treba porapvt za assign
-        Object pointer = execute(mem.expr);
-        if (pointer instanceof Frame.Label label) {
-            Object value = this.memory.ldM(label);
-            return new AddressValuePair(-1, value);
-        }
-        if (pointer instanceof Integer address) {
-            Object value;
-            try {
-                value = this.memory.ldM(address);
-            } catch (IllegalArgumentException e) {
-                value = null;
-            }
-            return new AddressValuePair(address, value);
-        }
-        throw new RuntimeException("Cannot execute MEM with this address!");
+    private Object execute(MemExpr mem, boolean isAssign) {
+        Object pointer = execute(mem.expr, isAssign);
+        Object value = null;
+        if (pointer instanceof Frame.Label label)
+            value = isAssign ? label : this.memory.ldM(label);
+        else if (pointer instanceof Integer address)
+            value = isAssign ? address : this.memory.ldM(address);
+        return value;
     }
 
-    private Object execute(NameExpr name) {
+    // TODO: Old MemExpr execute
+//    private AddressValuePair execute(MemExpr mem) {
+//        Object pointer = execute(mem.expr);
+//        if (pointer instanceof Frame.Label label) {
+//            Object value = this.memory.ldM(label);
+//            return new AddressValuePair(-1, value);
+//        }
+//        if (pointer instanceof Integer address) {
+//            Object value;
+//            try {
+//                value = this.memory.ldM(address);
+//            } catch (IllegalArgumentException e) {
+//                value = null;
+//            }
+//            return new AddressValuePair(address, value);
+//        }
+//        throw new RuntimeException("Cannot execute MEM with this address!");
+//    }
+
+    private Object execute(NameExpr name, boolean isAssign) {
         Frame.Label value = name.label;
         if (value.name.equals(Constants.framePointer))
             return this.framePointer;
@@ -272,8 +272,10 @@ public class Interpreter {
         return value;
     }
 
-    private Object execute(TempExpr temp) {
-        return temp.temp;
+    private Object execute(TempExpr temp, boolean isAssign) {
+        if (isAssign)
+            return temp.temp;
+        return this.memory.ldT(temp.temp);
     }
 
     // ----------- pomožne funkcije -----------

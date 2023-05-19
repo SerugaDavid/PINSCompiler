@@ -244,4 +244,17 @@ public class Interpreter {
     private void prettyPrint(IRNode ir) {
         System.out.println(prettyDescription(ir));
     }
+
+    /**
+     * Pairs an address with a value.
+     */
+    private class AddressValuePair {
+        public final int address;
+        public final Object value;
+
+        public AddressValuePair(int address, Object value) {
+            this.address = address;
+            this.value = value;
+        }
+    }
 }

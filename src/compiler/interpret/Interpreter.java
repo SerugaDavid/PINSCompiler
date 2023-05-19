@@ -171,8 +171,36 @@ public class Interpreter {
     }
 
     private Object execute(BinopExpr binop) {
-        // TODO: Implement
-        throw new UnsupportedOperationException("Unimplemented method 'execute'");
+        Object left = execute(binop.lhs);
+        if (left instanceof AddressValuePair addressValuePair) {
+            /* TODO here we have a problem
+                    maybe we need an address or a value
+             */
+            left = addressValuePair.value == null ? addressValuePair.address : addressValuePair.value;
+        }
+
+        Object right = execute(binop.rhs);
+        if (right instanceof AddressValuePair addressValuePair)
+            right = addressValuePair.value;
+
+        return switch (binop.op) {
+            // logical operators
+            case GT -> toInt(left) > toInt(right);
+            case LT -> toInt(left) < toInt(right);
+            case GEQ -> toInt(left) >= toInt(right);
+            case LEQ -> toInt(left) <= toInt(right);
+            case EQ -> toInt(left) == toInt(right);
+            case NEQ -> toInt(left) != toInt(right);
+            case AND -> toBool(left) && toBool(right);
+            case OR -> toBool(left) || toBool(right);
+
+            // arithmetic operators
+            case ADD -> toInt(left) + toInt(right);
+            case SUB -> toInt(left) - toInt(right);
+            case MUL -> toInt(left) * toInt(right);
+            case DIV -> toInt(left) / toInt(right);
+            case MOD -> toInt(left) % toInt(right);
+        };
     }
 
     private Object execute(CallExpr call) {

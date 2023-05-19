@@ -66,10 +66,13 @@ public class Interpreter {
         internalInterpret(chunk);
     }
 
-    private void internalInterpret(CodeChunk chunk) {
+    private Object internalInterpret(CodeChunk chunk) {
         // @TODO: Nastavi FP in SP na nove vrednosti!
+        this.memory.stM(this.framePointer - chunk.frame.oldFPOffset(), this.framePointer);
         this.framePointer = this.stackPointer;
         this.stackPointer -= chunk.frame.size();
+        this.memory.registerLabel(Frame.Label.named(Constants.framePointer), this.framePointer);
+        this.memory.registerLabel(Frame.Label.named(Constants.stackPointer), this.stackPointer);
         
         Object result = null;
         if (chunk.code instanceof SeqStmt seq) {
@@ -92,6 +95,10 @@ public class Interpreter {
         // @TODO: Ponastavi FP in SP na stare vrednosti!
         this.stackPointer = this.framePointer;
         this.framePointer = (int) memory.ldM(framePointer - chunk.frame.oldFPOffset());
+        this.memory.registerLabel(Frame.Label.named(Constants.framePointer), this.framePointer);
+        this.memory.registerLabel(Frame.Label.named(Constants.stackPointer), this.stackPointer);
+
+        return result;
     }
 
     private Object execute(IRStmt stmt) {

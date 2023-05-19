@@ -213,7 +213,7 @@ public class IRCodeGenerator implements Visitor {
         MoveStmt increment = new MoveStmt((IRExpr) counter, addition);
         BinopExpr condition = new BinopExpr((IRExpr) counter, (IRExpr) high, BinopExpr.Operator.LT);
         CJumpStmt cjump = new CJumpStmt(condition, loopBody, loopEnd);
-        JumpStmt jump = new JumpStmt(loopBody);
+        JumpStmt jump = new JumpStmt(loopStart);
 
         // assemble with body
         forLoop.body.accept(this);

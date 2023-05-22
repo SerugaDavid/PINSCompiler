@@ -3,15 +3,19 @@ typ str:string;
 typ log:logical;
 
 fun main(arg:int):int = (
-    {for i = 0, 10, 1 : (
+    {size = 10},
+    {for i = 0, size, 1 : (
         {a[i] = 3*i},
         print_int(i)
     )},
-    #print_int_arr(a, 10),
+    #print_int_arr(a, size),
+    #print_str(' '),
+    {for i = 0, size, 1 : print_int(a[i])},
     0
 ) { where
     var a:arr[10]int;
-    var i:int
+    var i:int;
+    var size:int
 };
 
 fun print_int_arr(array:arr[10]int, size:int):log = (

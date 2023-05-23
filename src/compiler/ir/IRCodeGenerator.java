@@ -231,11 +231,11 @@ public class IRCodeGenerator implements Visitor {
     public void visit(Name name) {
         Def definition = this.definitions.valueFor(name).get();
         Access access = this.accesses.valueFor(definition).get();
-        MemExpr value;
+        IRExpr value;
         if (access instanceof Access.Global) {
             Access.Global global = (Access.Global) access;
             NameExpr nameExpr = new NameExpr(global.label);
-            value = new MemExpr(nameExpr);
+            value = nameExpr;
         } else {
             // needed variables
             ConstantExpr offset;
@@ -259,10 +259,16 @@ public class IRCodeGenerator implements Visitor {
             for (int i = 0; i < levelDifference; i++)
                 framePointer = new MemExpr(framePointer);
 
-            // get variable
+            // get pointer
             BinopExpr pointer = new BinopExpr(framePointer, offset, BinopExpr.Operator.ADD);
-            value = new MemExpr(pointer);
+            value = pointer;
         }
+
+        // check if array
+        if (!this.types.valueFor(name).get().isArray())
+            value = new MemExpr(value);
+
+        // store
         this.imcCode.store(value, name);
     }
 

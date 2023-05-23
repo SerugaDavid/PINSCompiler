@@ -10,6 +10,8 @@ import static common.RequireNonNull.requireNonNull;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
@@ -63,10 +65,10 @@ public class Interpreter {
     public void interpret(CodeChunk chunk) {
         memory.stM(framePointer + Constants.WordSize, 0); // argument v funkcijo main
         memory.stM(framePointer - chunk.frame.oldFPOffset(), framePointer); // oldFP
-        internalInterpret(chunk);
+        internalInterpret(chunk, new HashMap<>());
     }
 
-    private Object internalInterpret(CodeChunk chunk) {
+    private Object internalInterpret(CodeChunk chunk, Map<Frame.Temp, Object> temps) {
         // @TODO: Nastavi FP in SP na nove vrednosti!
         this.memory.stM(this.framePointer - chunk.frame.oldFPOffset(), this.framePointer);
         this.framePointer = this.stackPointer;
@@ -78,7 +80,7 @@ public class Interpreter {
         if (chunk.code instanceof SeqStmt seq) {
             for (int pc = 0; pc < seq.statements.size(); pc++) {
                 var stmt = seq.statements.get(pc);
-                result = execute(stmt, false);
+                result = execute(stmt, false, temps);
                 if (result instanceof Frame.Label label) {
                     for (int q = 0; q < seq.statements.size(); q++) {
                         if (seq.statements.get(q) instanceof LabelStmt labelStmt && labelStmt.label.equals(label)) {
@@ -101,45 +103,45 @@ public class Interpreter {
         return result;
     }
 
-    private Object execute(IRStmt stmt, boolean isAssign) {
+    private Object execute(IRStmt stmt, boolean isAssign, Map<Frame.Temp, Object> temps) {
         if (stmt instanceof CJumpStmt cjump) {
-            return execute(cjump, isAssign);
+            return execute(cjump, isAssign, temps);
         } else if (stmt instanceof ExpStmt exp) {
-            return execute(exp, isAssign);
+            return execute(exp, isAssign, temps);
         } else if (stmt instanceof JumpStmt jump) {
-            return execute(jump, isAssign);
+            return execute(jump, isAssign, temps);
         } else if (stmt instanceof LabelStmt label) {
             return null;
         } else if (stmt instanceof MoveStmt move) {
-            return execute(move, isAssign);
+            return execute(move, isAssign, temps);
         } else {
             throw new RuntimeException("Cannot execute this statement!");
         }
     }
 
-    private Object execute(CJumpStmt cjump, boolean isAssign) {
-        boolean condition = (boolean) execute(cjump.condition, isAssign);
+    private Object execute(CJumpStmt cjump, boolean isAssign, Map<Frame.Temp, Object> temps) {
+        boolean condition = (boolean) execute(cjump.condition, isAssign, temps);
         if (condition)
             return cjump.thenLabel;
         return cjump.elseLabel;
     }
 
-    private Object execute(ExpStmt exp, boolean isAssign) {
-        return execute(exp.expr, isAssign);
+    private Object execute(ExpStmt exp, boolean isAssign, Map<Frame.Temp, Object> temps) {
+        return execute(exp.expr, isAssign, temps);
     }
 
-    private Object execute(JumpStmt jump, boolean isAssign) {
+    private Object execute(JumpStmt jump, boolean isAssign, Map<Frame.Temp, Object> temps) {
         return jump.label;
     }
 
-    private Object execute(MoveStmt move, boolean isAssign) {
-        Object src = execute(move.src, false);
+    private Object execute(MoveStmt move, boolean isAssign, Map<Frame.Temp, Object> temps) {
+        Object src = execute(move.src, false, temps);
 
         if (move.dst instanceof MemExpr memExpr) {
-            Object dst = execute(memExpr, true);
+            Object dst = execute(memExpr, true, temps);
             memory.stM(toInt(dst), src);
         } else if (move.dst instanceof TempExpr tempExpr) {
-            Frame.Temp dst = (Frame.Temp) execute(tempExpr, true);
+            Frame.Temp dst = (Frame.Temp) execute(tempExpr, true, temps);
             memory.stT(dst, src);
         } else {
             throw new RuntimeException("Cannot execute MOVE to this destination!");
@@ -148,30 +150,30 @@ public class Interpreter {
         return src;
     }
 
-    private Object execute(IRExpr expr, boolean isAssign) {
+    private Object execute(IRExpr expr, boolean isAssign, Map<Frame.Temp, Object> temps) {
         if (expr instanceof BinopExpr binopExpr) {
-            return execute(binopExpr, isAssign);
+            return execute(binopExpr, isAssign, temps);
         } else if (expr instanceof CallExpr callExpr) {
-            return execute(callExpr, isAssign);
+            return execute(callExpr, isAssign, temps);
         } else if (expr instanceof ConstantExpr constantExpr) {
-            return execute(constantExpr, isAssign);
+            return execute(constantExpr, isAssign, temps);
         } else if (expr instanceof EseqExpr eseqExpr) {
             throw new RuntimeException("Cannot execute ESEQ; linearize code!");
         } else if (expr instanceof MemExpr memExpr) {
-            return execute(memExpr, isAssign);
+            return execute(memExpr, isAssign, temps);
         } else if (expr instanceof NameExpr nameExpr) {
-            return execute(nameExpr, isAssign);
+            return execute(nameExpr, isAssign, temps);
         } else if (expr instanceof TempExpr tempExpr) {
-            return execute(tempExpr, isAssign);
+            return execute(tempExpr, isAssign, temps);
         } else {
             throw new IllegalArgumentException("Unknown expr type");
         }
     }
 
-    private Object execute(BinopExpr binop, boolean isAssign) {
-        Object left = execute(binop.lhs, isAssign);
+    private Object execute(BinopExpr binop, boolean isAssign, Map<Frame.Temp, Object> temps) {
+        Object left = execute(binop.lhs, isAssign, temps);
 
-        Object right = execute(binop.rhs, false/* Maybe false */);
+        Object right = execute(binop.rhs, false/* Maybe false */, temps);
 
         return switch (binop.op) {
             // logical operators
@@ -193,49 +195,49 @@ public class Interpreter {
         };
     }
 
-    private Object execute(CallExpr call, boolean isAssign) {
+    private Object execute(CallExpr call, boolean isAssign, Map<Frame.Temp, Object> temps) {
         if (call.label.name.equals(Constants.printIntLabel)) {
             if (call.args.size() != 2) { throw new RuntimeException("Invalid argument count!"); }
-            var arg = execute(call.args.get(1), false);
+            var arg = execute(call.args.get(1), false, temps);
             outputStream.ifPresent(stream -> stream.println(arg));
             return 0;
         } else if (call.label.name.equals(Constants.printStringLabel)) {
             if (call.args.size() != 2) { throw new RuntimeException("Invalid argument count!"); }
-            var address = execute(call.args.get(1), false);
+            var address = execute(call.args.get(1), false, temps);
             var res = memory.ldM(toInt(address));
             outputStream.ifPresent(stream -> stream.println("\""+res+"\""));
             return 0;
         } else if (call.label.name.equals(Constants.printLogLabel)) {
             if (call.args.size() != 2) { throw new RuntimeException("Invalid argument count!"); }
-            var arg = execute(call.args.get(1), false);
+            var arg = execute(call.args.get(1), false, temps);
             outputStream.ifPresent(stream -> stream.println(toBool(arg)));
             return 0;
         } else if (call.label.name.equals(Constants.randIntLabel)) {
             if (call.args.size() != 3) { throw new RuntimeException("Invalid argument count!"); }
-            var min = toInt(execute(call.args.get(1), false));
-            var max = toInt(execute(call.args.get(2), false));
+            var min = toInt(execute(call.args.get(1), false, temps));
+            var max = toInt(execute(call.args.get(2), false, temps));
             return random.nextInt(min, max);
         } else if (call.label.name.equals(Constants.seedLabel)) {
             if (call.args.size() != 2) { throw new RuntimeException("Invalid argument count!"); }
-            var seed = toInt(execute(call.args.get(1), false));
+            var seed = toInt(execute(call.args.get(1), false, temps));
             random = new Random(seed);
             return 0;
         } else if (memory.ldM(call.label) instanceof CodeChunk chunk) {
             // TODO: tle moraš pogruntat, nek return value
             // TODO: kak ga dobit in kako ga vrnit
             // TODO: ?????????????????????????????????????
-            return internalInterpret(chunk);
+            return internalInterpret(chunk, temps);
         } else {
             throw new RuntimeException("Only functions can be called!");
         }
     }
 
-    private Object execute(ConstantExpr constant, boolean isAssign) {
+    private Object execute(ConstantExpr constant, boolean isAssign, Map<Frame.Temp, Object> temps) {
         return constant.constant;
     }
 
-    private Object execute(MemExpr mem, boolean isAssign) {
-        Object pointer = execute(mem.expr, isAssign);
+    private Object execute(MemExpr mem, boolean isAssign, Map<Frame.Temp, Object> temps) {
+        Object pointer = execute(mem.expr, isAssign, temps);
         Object value = null;
         if (pointer instanceof Frame.Label label)
             value = isAssign ? label : this.memory.ldM(label);
@@ -263,7 +265,7 @@ public class Interpreter {
 //        throw new RuntimeException("Cannot execute MEM with this address!");
 //    }
 
-    private Object execute(NameExpr name, boolean isAssign) {
+    private Object execute(NameExpr name, boolean isAssign, Map<Frame.Temp, Object> temps) {
         Frame.Label value = name.label;
         if (value.name.equals(Constants.framePointer))
             return this.framePointer;
@@ -272,7 +274,7 @@ public class Interpreter {
         return value;
     }
 
-    private Object execute(TempExpr temp, boolean isAssign) {
+    private Object execute(TempExpr temp, boolean isAssign, Map<Frame.Temp, Object> temps) {
         if (isAssign)
             return temp.temp;
         return this.memory.ldT(temp.temp);

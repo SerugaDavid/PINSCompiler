@@ -68,7 +68,7 @@ public class Interpreter {
         internalInterpret(chunk, new HashMap<>());
     }
 
-    private Object internalInterpret(CodeChunk chunk, Map<Frame.Temp, Object> temps) {
+    private void internalInterpret(CodeChunk chunk, Map<Frame.Temp, Object> temps) {
         // @TODO: Nastavi FP in SP na nove vrednosti!
         this.memory.stM(this.framePointer - chunk.frame.oldFPOffset(), this.framePointer);
         this.framePointer = this.stackPointer;
@@ -99,8 +99,6 @@ public class Interpreter {
         this.framePointer = (int) memory.ldM(framePointer - chunk.frame.oldFPOffset());
         this.memory.registerLabel(Frame.Label.named(Constants.framePointer), this.framePointer);
         this.memory.registerLabel(Frame.Label.named(Constants.stackPointer), this.stackPointer);
-
-        return result;
     }
 
     private Object execute(IRStmt stmt, Map<Frame.Temp, Object> temps) {
@@ -120,8 +118,8 @@ public class Interpreter {
     }
 
     private Object execute(CJumpStmt cjump, Map<Frame.Temp, Object> temps) {
-        boolean condition = (boolean) execute(cjump.condition, temps);
-        if (condition)
+        int condition = (int) execute(cjump.condition, temps);
+        if (condition == 1)
             return cjump.thenLabel;
         return cjump.elseLabel;
     }
@@ -230,10 +228,15 @@ public class Interpreter {
             random = new Random(seed);
             return 0;
         } else if (memory.ldM(call.label) instanceof CodeChunk chunk) {
-            // TODO: tle moraš pogruntat, nek return value
-            // TODO: kak ga dobit in kako ga vrnit
-            // TODO: ?????????????????????????????????????
-            return internalInterpret(chunk, temps);
+            for (int i = 0; i < call.args.size(); i++) {
+                var arg = execute(call.args.get(i), temps);
+                int address = this.stackPointer + i*Constants.WordSize;
+                this.memory.stM(address, arg);
+            }
+
+            internalInterpret(chunk, temps);
+
+            return this.memory.ldM(this.stackPointer);
         } else {
             throw new RuntimeException("Only functions can be called!");
         }

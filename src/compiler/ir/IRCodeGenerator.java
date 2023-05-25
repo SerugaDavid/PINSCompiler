@@ -262,6 +262,10 @@ public class IRCodeGenerator implements Visitor {
             // get pointer
             BinopExpr pointer = new BinopExpr(framePointer, offset, BinopExpr.Operator.ADD);
             value = pointer;
+
+            // if array type and parameter, dereference
+            if (this.types.valueFor(name).get().isArray() && access instanceof Access.Parameter)
+                value = new MemExpr(value);
         }
 
         // check if array

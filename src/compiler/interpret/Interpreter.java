@@ -70,7 +70,7 @@ public class Interpreter {
 
     private void internalInterpret(CodeChunk chunk, Map<Frame.Temp, Object> temps) {
         // @TODO: Nastavi FP in SP na nove vrednosti!
-        this.memory.stM(this.framePointer - chunk.frame.oldFPOffset(), this.framePointer);
+        this.memory.stM(this.stackPointer - chunk.frame.oldFPOffset(), this.framePointer);
         this.framePointer = this.stackPointer;
         this.stackPointer -= chunk.frame.size();
         this.memory.registerLabel(Frame.Label.named(Constants.framePointer), this.framePointer);

@@ -171,8 +171,12 @@ public class Interpreter {
 
     private Object execute(BinopExpr binop, Map<Frame.Temp, Object> temps) {
         Object left = execute(binop.lhs, temps);
+        if (left instanceof Frame.Label label)
+            left = this.memory.address(label);
 
         Object right = execute(binop.rhs, temps);
+        if (right instanceof Frame.Label label)
+            right = this.memory.address(label);
 
         Object out = switch (binop.op) {
             // logical operators

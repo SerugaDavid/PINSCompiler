@@ -429,6 +429,7 @@ public class IRCodeGenerator implements Visitor {
                 IRStmt last = statements.statements.get(statements.statements.size() - 1);
                 if (last instanceof ExpStmt expStmt) {
                     returnValue = expStmt.expr;
+                    returnValue = new EseqExpr((IRStmt) body, returnValue);
                 } else
                     throw new UnsupportedOperationException("Last statement should be ExpStmt");
             } else

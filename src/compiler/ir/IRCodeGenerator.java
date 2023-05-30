@@ -149,10 +149,10 @@ public class IRCodeGenerator implements Visitor {
 //            left = new EseqExpr((IRStmt) left, new ConstantExpr(0));
 //        if (right instanceof IRStmt)
 //            right = new EseqExpr((IRStmt) right, new ConstantExpr(0));
-        if (left instanceof SeqStmt statements)
-            left = ((ExpStmt)statements.statements.get(0)).expr;
-        if (right instanceof SeqStmt statements)
-            right = ((ExpStmt)statements.statements.get(0)).expr;
+//        if (left instanceof SeqStmt statements)
+//            left = ((ExpStmt)statements.statements.get(0)).expr;
+//        if (right instanceof SeqStmt statements)
+//            right = ((ExpStmt)statements.statements.get(0)).expr;
 
         if (left instanceof IRStmt || right instanceof IRStmt)
             throw new  UnsupportedOperationException("What are you doing my guy? Error in IRCodeGenerator Binary!!!");
@@ -182,6 +182,20 @@ public class IRCodeGenerator implements Visitor {
             if (tmp instanceof IRExpr)
                 tmp = new ExpStmt((IRExpr) tmp);
             statements.add((IRStmt) tmp);
+        }
+        if (statements.size() == 1) {
+            if (statements.get(0) instanceof ExpStmt)
+                tmp = ((ExpStmt) statements.get(0)).expr;
+            else
+                tmp = statements.get(0);
+            this.imcCode.store(tmp, block);
+            return;
+        }
+        if (statements.get(statements.size() - 1) instanceof ExpStmt last) {
+            SeqStmt seq = new SeqStmt(statements.subList(0, statements.size() - 1));
+            EseqExpr eseqExpr = new EseqExpr(seq, last.expr);
+            this.imcCode.store(eseqExpr, block);
+            return;
         }
         SeqStmt seq = new SeqStmt(statements);
         this.imcCode.store(seq, block);
@@ -426,29 +440,29 @@ public class IRCodeGenerator implements Visitor {
         IRNode body = this.imcCode.valueFor(funDef.body).get();
 
         // move(return value placement, koda funckije)
-        List<IRStmt> prevStatements = new ArrayList<>();
-        IRExpr returnValue;
-        if (body instanceof IRExpr)
-            returnValue = (IRExpr) body;
-        else {
-            if (body instanceof SeqStmt statements) {
-                IRStmt last = statements.statements.get(statements.statements.size() - 1);
-                if (last instanceof ExpStmt expStmt) {
-                    returnValue = expStmt.expr;
-                    prevStatements = statements.statements.subList(0, statements.statements.size() - 1);
-                } else
-                    throw new UnsupportedOperationException("Last statement should be ExpStmt");
-            } else
-                throw new UnsupportedOperationException("Should be statements in function!!!");
-        }
+//        List<IRStmt> prevStatements = new ArrayList<>();
+//        IRExpr returnValue;
+//        if (body instanceof IRExpr)
+//            returnValue = (IRExpr) body;
+//        else {
+//            if (body instanceof SeqStmt statements) {
+//                IRStmt last = statements.statements.get(statements.statements.size() - 1);
+//                if (last instanceof ExpStmt expStmt) {
+//                    returnValue = expStmt.expr;
+//                    prevStatements = statements.statements.subList(0, statements.statements.size() - 1);
+//                } else
+//                    throw new UnsupportedOperationException("Last statement should be ExpStmt");
+//            } else
+//                throw new UnsupportedOperationException("Should be statements in function!!!");
+//        }
 
         MemExpr location = new MemExpr(NameExpr.FP());
-        MoveStmt saveReturn = new MoveStmt(location, returnValue);
-        prevStatements.add(saveReturn);
-        SeqStmt statements = new SeqStmt(prevStatements);
+        MoveStmt saveReturn = new MoveStmt(location, (IRExpr) body);
+//        prevStatements.add(saveReturn);
+//        SeqStmt statements = new SeqStmt(prevStatements);
 
         // create code chunk
-        Chunk.CodeChunk code = new Chunk.CodeChunk(this.currentFrame, statements);
+        Chunk.CodeChunk code = new Chunk.CodeChunk(this.currentFrame, saveReturn);
         this.chunks.add(code);
 
         // reset frame

@@ -145,10 +145,12 @@ public class IRCodeGenerator implements Visitor {
         IRNode right = this.imcCode.valueFor(binary.right).get();
 
         // convert statements to expressions
-        if (left instanceof IRStmt)
-            left = new EseqExpr((IRStmt) left, new ConstantExpr(0));
-        if (right instanceof IRStmt)
-            right = new EseqExpr((IRStmt) right, new ConstantExpr(0));
+//        if (left instanceof IRStmt)
+//            left = new EseqExpr((IRStmt) left, new ConstantExpr(0));
+//        if (right instanceof IRStmt)
+//            right = new EseqExpr((IRStmt) right, new ConstantExpr(0));
+        if (left instanceof IRStmt || right instanceof IRStmt)
+            throw new  UnsupportedOperationException("What are you doing my guy? Error in IRCodeGenerator Binary!!!");
 
         // check operators and store
         if (binary.operator == Binary.Operator.ASSIGN) {
@@ -196,17 +198,25 @@ public class IRCodeGenerator implements Visitor {
         forLoop.high.accept(this);
         forLoop.step.accept(this);
         IRNode counter = this.imcCode.valueFor(forLoop.counter).get();
-        if (counter instanceof IRStmt)
-            counter = new EseqExpr((IRStmt) counter, new ConstantExpr(0));
+//        if (counter instanceof IRStmt)
+//            counter = new EseqExpr((IRStmt) counter, new ConstantExpr(0));
         IRNode low = this.imcCode.valueFor(forLoop.low).get();
-        if (low instanceof IRStmt)
-            low = new EseqExpr((IRStmt) low, new ConstantExpr(0));
+//        if (low instanceof IRStmt)
+//            low = new EseqExpr((IRStmt) low, new ConstantExpr(0));
         IRNode high = this.imcCode.valueFor(forLoop.high).get();
-        if (high instanceof IRStmt)
-            high = new EseqExpr((IRStmt) high, new ConstantExpr(0));
+//        if (high instanceof IRStmt)
+//            high = new EseqExpr((IRStmt) high, new ConstantExpr(0));
         IRNode step = this.imcCode.valueFor(forLoop.step).get();
-        if (step instanceof IRStmt)
-            step = new EseqExpr((IRStmt) step, new ConstantExpr(0));
+//        if (step instanceof IRStmt)
+//            step = new EseqExpr((IRStmt) step, new ConstantExpr(0));
+
+        if (
+                counter instanceof IRStmt
+                || low instanceof IRStmt
+                || high instanceof IRStmt
+                || step instanceof IRStmt
+        )
+            throw new  UnsupportedOperationException("What are you doing my guy? Error in IRCodeGenerator forLoop!!!");
 
         MoveStmt init = new MoveStmt((IRExpr) counter, (IRExpr) low);
         BinopExpr addition = new BinopExpr((IRExpr) counter, (IRExpr) step, BinopExpr.Operator.ADD);
@@ -343,8 +353,10 @@ public class IRCodeGenerator implements Visitor {
     public void visit(Unary unary) {
         unary.expr.accept(this);
         IRNode expr = this.imcCode.valueFor(unary.expr).get();
+//        if (expr instanceof IRStmt)
+//            expr = new EseqExpr((IRStmt) expr, new ConstantExpr(0));
         if (expr instanceof IRStmt)
-            expr = new EseqExpr((IRStmt) expr, new ConstantExpr(0));
+            throw new  UnsupportedOperationException("What are you doing my guy? Error in IRCodeGenerator Unary!!!");
         ConstantExpr zero = new ConstantExpr(0);
         BinopExpr unop = switch (unary.operator) {
             case ADD -> new BinopExpr(zero, (IRExpr) expr, BinopExpr.Operator.ADD);
@@ -412,8 +424,16 @@ public class IRCodeGenerator implements Visitor {
         IRExpr returnValue;
         if (body instanceof IRExpr)
             returnValue = (IRExpr) body;
-        else
-            returnValue = new EseqExpr((IRStmt) body, new ConstantExpr(0));
+        else {
+            if (body instanceof SeqStmt statements) {
+                IRStmt last = statements.statements.get(statements.statements.size() - 1);
+                if (last instanceof ExpStmt expStmt) {
+                    returnValue = expStmt.expr;
+                } else
+                    throw new UnsupportedOperationException("Last statement should be ExpStmt");
+            } else
+                throw new UnsupportedOperationException("Should be statements in function!!!");
+        }
 
         MemExpr location = new MemExpr(NameExpr.FP());
         MoveStmt saveReturn = new MoveStmt(location, returnValue);

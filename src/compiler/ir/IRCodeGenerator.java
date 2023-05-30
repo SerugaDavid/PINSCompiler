@@ -421,6 +421,7 @@ public class IRCodeGenerator implements Visitor {
         IRNode body = this.imcCode.valueFor(funDef.body).get();
 
         // move(return value placement, koda funckije)
+        List<IRStmt> prevStatements = new ArrayList<>();
         IRExpr returnValue;
         if (body instanceof IRExpr)
             returnValue = (IRExpr) body;
@@ -429,7 +430,7 @@ public class IRCodeGenerator implements Visitor {
                 IRStmt last = statements.statements.get(statements.statements.size() - 1);
                 if (last instanceof ExpStmt expStmt) {
                     returnValue = expStmt.expr;
-                    returnValue = new EseqExpr((IRStmt) body, returnValue);
+                    prevStatements = statements.statements.subList(0, statements.statements.size() - 1);
                 } else
                     throw new UnsupportedOperationException("Last statement should be ExpStmt");
             } else
@@ -438,9 +439,11 @@ public class IRCodeGenerator implements Visitor {
 
         MemExpr location = new MemExpr(NameExpr.FP());
         MoveStmt saveReturn = new MoveStmt(location, returnValue);
+        prevStatements.add(saveReturn);
+        SeqStmt statements = new SeqStmt(prevStatements);
 
         // create code chunk
-        Chunk.CodeChunk code = new Chunk.CodeChunk(this.currentFrame, saveReturn);
+        Chunk.CodeChunk code = new Chunk.CodeChunk(this.currentFrame, statements);
         this.chunks.add(code);
 
         // reset frame

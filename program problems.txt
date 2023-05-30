@@ -1,9 +1,5 @@
 problems:
-- () calculation (tle je fora, da vzame kot blok in pol mora pretvort v expression in to nardi z eseq in vzame expression pr tem ki pa je constant 0)
 - () as a parameter
-- global array
-- rekurzivne funkcije
-- string return/print_str
 - booleans
 - while loops
 - local array
@@ -19,3 +15,7 @@ works:
 - for loops
 - 1d array assignment
 - 1d array access
+- global array
+- rekurzivne funkcije
+- string return/print_str
+- () calculation (tle je fora, da vzame kot blok in pol mora pretvort v expression in to nardi z eseq in vzame expression pr tem ki pa je constant 0)

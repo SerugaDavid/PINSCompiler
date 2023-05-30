@@ -149,6 +149,11 @@ public class IRCodeGenerator implements Visitor {
 //            left = new EseqExpr((IRStmt) left, new ConstantExpr(0));
 //        if (right instanceof IRStmt)
 //            right = new EseqExpr((IRStmt) right, new ConstantExpr(0));
+        if (left instanceof SeqStmt statements)
+            left = ((ExpStmt)statements.statements.get(0)).expr;
+        if (right instanceof SeqStmt statements)
+            right = ((ExpStmt)statements.statements.get(0)).expr;
+
         if (left instanceof IRStmt || right instanceof IRStmt)
             throw new  UnsupportedOperationException("What are you doing my guy? Error in IRCodeGenerator Binary!!!");
 

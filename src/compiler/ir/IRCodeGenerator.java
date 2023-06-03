@@ -459,8 +459,8 @@ public class IRCodeGenerator implements Visitor {
                 condition = new MemExpr(condition);
         }
 
-        CJumpStmt cjump = new CJumpStmt(condition, loopStart, loopEnd);
-        JumpStmt jump = new JumpStmt(loopBody);
+        CJumpStmt cjump = new CJumpStmt(condition, loopBody, loopEnd);
+        JumpStmt jump = new JumpStmt(loopStart);
 
         // assemble with body
         whileLoop.body.accept(this);

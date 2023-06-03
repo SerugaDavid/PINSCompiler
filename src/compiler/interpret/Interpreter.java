@@ -23,6 +23,7 @@ import compiler.ir.code.IRNode;
 import compiler.ir.code.expr.*;
 import compiler.ir.code.stmt.*;
 import compiler.ir.IRPrettyPrint;
+import compiler.parser.ast.expr.Binary;
 
 public class Interpreter {
     /**
@@ -142,6 +143,9 @@ public class Interpreter {
             Frame.Temp dst = tempExpr.temp;
             temps.put(dst, src);
             memory.stT(dst, src);
+        } else if (move.dst instanceof BinopExpr binopExpr) {
+            Object dst = execute(binopExpr, temps);
+            memory.stM(toInt(dst), src);
         } else {
             throw new RuntimeException("Cannot execute MOVE to this destination!");
         }

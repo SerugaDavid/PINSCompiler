@@ -122,7 +122,12 @@ public class IRCodeGenerator implements Visitor {
             args.add(staticLink);
         for (Expr arg : call.arguments) {
             arg.accept(this);
-            args.add((IRExpr) this.imcCode.valueFor(arg).get());
+            IRNode argNode = this.imcCode.valueFor(arg).get();
+            if (arg instanceof Binary binary) {
+                if (binary.operator == Binary.Operator.ARR)
+                    argNode = new MemExpr((IRExpr) argNode);
+            }
+            args.add((IRExpr) argNode);
         }
 
         // create call
@@ -159,14 +164,28 @@ public class IRCodeGenerator implements Visitor {
 
         // check operators and store
         if (binary.operator == Binary.Operator.ASSIGN) {
+            if (binary.right instanceof Binary rightBinary) {
+                if (rightBinary.operator == Binary.Operator.ARR)
+                    right = new MemExpr((IRExpr) right);
+            }
             MoveStmt move = new MoveStmt((IRExpr) left, (IRExpr) right);
             this.imcCode.store(move, binary);
         } else if (binary.operator == Binary.Operator.ARR) {
-            BinopExpr offset = new BinopExpr((IRExpr) right, new ConstantExpr(Constants.WordSize), BinopExpr.Operator.MUL);
+            Type.Array arrayType = (Type.Array) this.types.valueFor(binary.left).get();
+            int elementSize = arrayType.type.sizeInBytes();
+            BinopExpr offset = new BinopExpr((IRExpr) right, new ConstantExpr(elementSize), BinopExpr.Operator.MUL);
             BinopExpr pointer = new BinopExpr((IRExpr) left, offset, BinopExpr.Operator.ADD);
-            MemExpr value = new MemExpr(pointer);
-            this.imcCode.store(value, binary);
+//            MemExpr value = new MemExpr(pointer);
+            this.imcCode.store(pointer, binary);
         } else {
+            if (binary.left instanceof Binary leftBinary) {
+                if (leftBinary.operator == Binary.Operator.ARR)
+                    left = new MemExpr((IRExpr) left);
+            }
+            if (binary.right instanceof Binary rightBinary) {
+                if (rightBinary.operator == Binary.Operator.ARR)
+                    right = new MemExpr((IRExpr) right);
+            }
             BinopExpr binop = new BinopExpr((IRExpr) left, (IRExpr) right, BinopExpr.convertOp(binary.operator));
             this.imcCode.store(binop, binary);
         }
@@ -179,8 +198,13 @@ public class IRCodeGenerator implements Visitor {
         for (Expr expr : block.expressions) {
             expr.accept(this);
             tmp = this.imcCode.valueFor(expr).get();
-            if (tmp instanceof IRExpr)
+            if (tmp instanceof IRExpr) {
+                if (expr instanceof Binary binary) {
+                    if (binary.operator == Binary.Operator.ARR)
+                        tmp = new MemExpr((IRExpr) tmp);
+                }
                 tmp = new ExpStmt((IRExpr) tmp);
+            }
             statements.add((IRStmt) tmp);
         }
         if (statements.size() == 1) {
@@ -220,12 +244,24 @@ public class IRCodeGenerator implements Visitor {
 //        if (counter instanceof IRStmt)
 //            counter = new EseqExpr((IRStmt) counter, new ConstantExpr(0));
         IRNode low = this.imcCode.valueFor(forLoop.low).get();
+        if (forLoop.low instanceof Binary binary) {
+            if (binary.operator == Binary.Operator.ARR)
+                low = new MemExpr((IRExpr) low);
+        }
 //        if (low instanceof IRStmt)
 //            low = new EseqExpr((IRStmt) low, new ConstantExpr(0));
         IRNode high = this.imcCode.valueFor(forLoop.high).get();
+        if (forLoop.high instanceof Binary binary) {
+            if (binary.operator == Binary.Operator.ARR)
+                high = new MemExpr((IRExpr) high);
+        }
 //        if (high instanceof IRStmt)
 //            high = new EseqExpr((IRStmt) high, new ConstantExpr(0));
         IRNode step = this.imcCode.valueFor(forLoop.step).get();
+        if (forLoop.step instanceof Binary binary) {
+            if (binary.operator == Binary.Operator.ARR)
+                step = new MemExpr((IRExpr) step);
+        }
 //        if (step instanceof IRStmt)
 //            step = new EseqExpr((IRStmt) step, new ConstantExpr(0));
 
@@ -318,6 +354,10 @@ public class IRCodeGenerator implements Visitor {
         // condition
         ifThenElse.condition.accept(this);
         IRExpr condition = (IRExpr) this.imcCode.valueFor(ifThenElse.condition).get();
+        if (ifThenElse.condition instanceof Binary binary) {
+            if (binary.operator == Binary.Operator.ARR)
+                condition = new MemExpr(condition);
+        }
         CJumpStmt cjump = new CJumpStmt(condition, trueLabel, falseLabel);
 
         // assemble with body
@@ -327,16 +367,26 @@ public class IRCodeGenerator implements Visitor {
         statements.add(trueLabelStmt);
         ifThenElse.thenExpression.accept(this);
         tmp = this.imcCode.valueFor(ifThenElse.thenExpression).get();
-        if (tmp instanceof IRExpr)
+        if (tmp instanceof IRExpr) {
+            if (ifThenElse.thenExpression instanceof Binary binary) {
+                if (binary.operator == Binary.Operator.ARR)
+                    tmp = new MemExpr((IRExpr) tmp);
+            }
             tmp = new ExpStmt((IRExpr) tmp);
+        }
         statements.add((IRStmt) tmp);
         statements.add(new JumpStmt(endLabel));
         statements.add(falseLabelStmt);
         if (ifThenElse.elseExpression.isPresent()) {
             ifThenElse.elseExpression.get().accept(this);
             tmp = this.imcCode.valueFor(ifThenElse.elseExpression.get()).get();
-            if (tmp instanceof IRExpr)
+            if (tmp instanceof IRExpr) {
+                if (ifThenElse.elseExpression.get() instanceof Binary binary) {
+                    if (binary.operator == Binary.Operator.ARR)
+                        tmp = new MemExpr((IRExpr) tmp);
+                }
                 tmp = new ExpStmt((IRExpr) tmp);
+            }
             statements.add((IRStmt) tmp);
         }
         statements.add(endLabelStmt);
@@ -376,6 +426,12 @@ public class IRCodeGenerator implements Visitor {
 //            expr = new EseqExpr((IRStmt) expr, new ConstantExpr(0));
         if (expr instanceof IRStmt)
             throw new  UnsupportedOperationException("What are you doing my guy? Error in IRCodeGenerator Unary!!!");
+
+        if (unary.expr instanceof Binary binary) {
+            if (binary.operator == Binary.Operator.ADD)
+                expr = new MemExpr((IRExpr) expr);
+        }
+
         ConstantExpr zero = new ConstantExpr(0);
         BinopExpr unop = switch (unary.operator) {
             case ADD -> new BinopExpr(zero, (IRExpr) expr, BinopExpr.Operator.ADD);
@@ -398,6 +454,10 @@ public class IRCodeGenerator implements Visitor {
         // loop logic
         whileLoop.condition.accept(this);
         IRExpr condition = (IRExpr) this.imcCode.valueFor(whileLoop.condition).get();
+        if (whileLoop.condition instanceof Binary binary) {
+            if (binary.operator == Binary.Operator.ARR)
+                condition = new MemExpr(condition);
+        }
 
         CJumpStmt cjump = new CJumpStmt(condition, loopStart, loopEnd);
         JumpStmt jump = new JumpStmt(loopBody);
@@ -405,8 +465,13 @@ public class IRCodeGenerator implements Visitor {
         // assemble with body
         whileLoop.body.accept(this);
         IRNode body = this.imcCode.valueFor(whileLoop.body).get();
-        if (body instanceof IRExpr)
+        if (body instanceof IRExpr) {
+            if (whileLoop.body instanceof Binary binary) {
+                if (binary.operator == Binary.Operator.ARR)
+                    body = new MemExpr((IRExpr) body);
+            }
             body = new ExpStmt((IRExpr) body);
+        }
         List<IRStmt> statements = Arrays.asList(loopStartStmt, cjump, loopBodyStmt, (IRStmt) body, jump, loopEndStmt);
 
         // create SeqStmt
@@ -438,6 +503,11 @@ public class IRCodeGenerator implements Visitor {
         // visit body; TODO: A rabimo sploh kej delat z argumenti
         funDef.body.accept(this);
         IRNode body = this.imcCode.valueFor(funDef.body).get();
+
+        if (funDef.body instanceof Binary binary) {
+            if (binary.operator == Binary.Operator.ARR)
+                body = new MemExpr((IRExpr) body);
+        }
 
         // move(return value placement, koda funckije)
 //        List<IRStmt> prevStatements = new ArrayList<>();

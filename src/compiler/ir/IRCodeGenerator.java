@@ -124,7 +124,8 @@ public class IRCodeGenerator implements Visitor {
             arg.accept(this);
             IRNode argNode = this.imcCode.valueFor(arg).get();
             if (arg instanceof Binary binary) {
-                if (binary.operator == Binary.Operator.ARR)
+                Type argType = this.types.valueFor(arg).get();
+                if (binary.operator == Binary.Operator.ARR && !(argType instanceof Type.Array))
                     argNode = new MemExpr((IRExpr) argNode);
             }
             args.add((IRExpr) argNode);

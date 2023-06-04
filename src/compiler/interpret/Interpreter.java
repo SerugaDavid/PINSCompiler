@@ -138,7 +138,10 @@ public class Interpreter {
 
         if (move.dst instanceof MemExpr memExpr) {
             Object dst = execute(memExpr.expr, temps);
-            memory.stM(toInt(dst), src);
+            if (dst instanceof Integer)
+                memory.stM(toInt(dst), src);
+            else if (dst instanceof Frame.Label label)
+                memory.stM(label, src);
         } else if (move.dst instanceof TempExpr tempExpr) {
             Frame.Temp dst = tempExpr.temp;
             temps.put(dst, src);

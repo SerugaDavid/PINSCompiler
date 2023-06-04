@@ -1,8 +1,5 @@
 problems:
-- () as a parameter
-- booleans
-- while loops
-- local array
+done
 
 works:
 - print_str
@@ -12,10 +9,15 @@ works:
 - rand_int
 - variable assignment
 - variable access
-- for loops
-- 1d array assignment
-- 1d array access
-- global array
-- rekurzivne funkcije
-- string return/print_str
+- booleans
 - () calculation (tle je fora, da vzame kot blok in pol mora pretvort v expression in to nardi z eseq in vzame expression pr tem ki pa je constant 0)
+- () as a parameter
+- while loops
+- for loops
+- rekurzivne funkcije
+- if statements
+- local array
+- global array
+- 1d array
+- 2d array
+- 3d array
